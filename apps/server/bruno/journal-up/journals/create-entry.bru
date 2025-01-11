@@ -1,0 +1,30 @@
+meta {
+  name: Create Journal Entry
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/journals/:journalId/entries
+  body: json
+  auth: bearer
+}
+
+params:path {
+  journalId: a0dcc8a2-cd26-4f83-9267-67c6dcc8c6d8
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{authToken}}
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "content": "This is an example of a journal entry."
+  }
+}

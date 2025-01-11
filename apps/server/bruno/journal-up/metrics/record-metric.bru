@@ -1,0 +1,24 @@
+meta {
+  name: Record Mindset Metric
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/metrics
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{authToken}}
+}
+
+body:json {
+  {
+    "metric_type": "resilience",
+    "value": 8,
+    "notes": "Bounced back quickly from a setback and learned from the experience"
+  }
+}

@@ -1,0 +1,25 @@
+--dark-bg: #272933;
+--bg-main-50: #88aaeeb3;
+--bg-main-100: #88aaeeb3;
+
+.light {
+  --background-color: white;
+  --text-color: black;
+}
+
+.dark {
+  --background-color: black;
+  --text-color: white;
+}
+
+.bgImage {
+  background-image: radial-gradient(#80808080 1px, transparent 0);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}

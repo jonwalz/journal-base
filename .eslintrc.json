@@ -1,0 +1,57 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": [
+      "/Users/jonathanwalz/repos/2024/journal-monorepo/apps/web/tsconfig.json"
+    ],
+    "tsconfigRootDir": "/Users/jonathanwalz/repos/2024/journal-monorepo"
+  },
+  "plugins": ["@typescript-eslint", "tailwindcss", "import"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:tailwindcss/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
+  ],
+  "rules": {
+    "tailwindcss/no-custom-classname": "error",
+    "tailwindcss/enforces-negative-arbitrary-values": "error",
+    "tailwindcss/enforces-shorthand": "error",
+    "tailwindcss/no-contradicting-classname": "error",
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
+    "import/no-unresolved": "error"
+  },
+  "settings": {
+    "tailwindcss": {
+      "whitelist": []
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": [
+          "/Users/jonathanwalz/repos/2024/journal-monorepo/apps/web/tsconfig.json"
+        ]
+      },
+      "alias": {
+        "map": [
+          ["~", "/Users/jonathanwalz/repos/2024/journal-monorepo/apps/web/app"]
+        ],
+        "extensions": [".ts", ".tsx", ".js", ".jsx", ".json"]
+      },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "moduleDirectory": ["node_modules", "apps/web/app"]
+      }
+    }
+  }
+}
