@@ -1,0 +1,10 @@
+import{u,d as f,r as n,j as t,O as y}from"./index-CTt_PmtF.js";import{T as w}from"./ThemeProvider-BQeXjIYU.js";import{k as x,l as g,_ as S,m as j,M as k,n as M,S as O}from"./components-Dq8-UIqM.js";/**
+ * @remix-run/react v2.15.2
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */let a="positions";function N({getKey:e,...l}){let{isSpaMode:c}=x(),r=u(),m=f();g({getKey:e,storageKey:a});let h=n.useMemo(()=>{if(!e)return null;let s=e(r,m);return s!==r.key?s:null},[]);if(c)return null;let p=((s,d)=>{if(!window.history.state||!window.history.state.key){let o=Math.random().toString(32).slice(2);window.history.replaceState({key:o},"")}try{let i=JSON.parse(sessionStorage.getItem(s)||"{}")[d||window.history.state.key];typeof i=="number"&&window.scrollTo(0,i)}catch(o){console.error(o),sessionStorage.removeItem(s)}}).toString();return n.createElement("script",S({},l,{suppressHydrationWarning:!0,dangerouslySetInnerHTML:{__html:`(${p})(${JSON.stringify(a)}, ${JSON.stringify(h)})`}}))}const R="/assets/tailwind-BzsmNioR.css",_=()=>[{rel:"preconnect",href:"https://fonts.googleapis.com"},{rel:"preconnect",href:"https://fonts.gstatic.com",crossOrigin:"anonymous"},{rel:"stylesheet",href:"https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Oswald:wght@200..700&family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap"},{rel:"stylesheet",href:R}];function b(){const e=j();return t.jsxs("html",{lang:"en",className:e.theme,children:[t.jsxs("head",{children:[t.jsx("meta",{charSet:"utf-8"}),t.jsx("meta",{name:"viewport",content:"width=device-width, initial-scale=1"}),t.jsx(k,{}),t.jsx(M,{})]}),t.jsxs("body",{children:[t.jsx(w,{theme:e.theme,children:t.jsx(y,{context:e})}),t.jsx(N,{}),t.jsx(O,{})]})]})}export{b as default,_ as links};

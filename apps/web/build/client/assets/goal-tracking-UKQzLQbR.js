@@ -1,0 +1,1 @@
+import{j as r}from"./index-CTt_PmtF.js";import{M as a}from"./MainLayout-DZY-cXE8.js";import"./input-CkwIpSKd.js";import"./components-Dq8-UIqM.js";import"./ThemeProvider-BQeXjIYU.js";function s(){return r.jsx(a,{children:r.jsx("div",{className:"container max-w-4xl mx-auto p-6 space-y-6",children:r.jsx("h1",{children:"Goal Tracking"})})})}export{s as default};

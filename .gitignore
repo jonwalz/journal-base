@@ -43,3 +43,5 @@ yarn-error.log*
 out/
 .nuxt/
 .temp/
+.aider.chat.history.md
+.aider.input.history

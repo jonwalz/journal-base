@@ -1,0 +1,1 @@
+import{j as e,O as l}from"./index-CTt_PmtF.js";function t(){return e.jsxs("div",{className:"flex",children:[e.jsx(l,{}),e.jsx("div",{className:"hidden md:flex flex flex-col w-full justify-center items-center border-2 bg-slate-600",children:e.jsx("img",{className:"w-full h-full object-cover",src:"/login_image.webp",alt:"A woman writing in a notebook"})})]})}export{t as default};

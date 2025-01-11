@@ -1,0 +1,1 @@
+import{j as t,O as o}from"./index-CTt_PmtF.js";import{M as r}from"./MainLayout-DZY-cXE8.js";import"./input-CkwIpSKd.js";import"./components-Dq8-UIqM.js";import"./ThemeProvider-BQeXjIYU.js";function u(){return t.jsx(r,{children:t.jsx(o,{})})}export{u as default};
