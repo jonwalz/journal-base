@@ -2,7 +2,10 @@ import { type IUserInfo } from "~/hooks/useUserInfo";
 import { ApiClient } from "./api-client.server";
 
 export class UserInfoServiceError extends Error {
-  constructor(message: string, public cause?: unknown) {
+  constructor(
+    message: string,
+    public override cause?: unknown
+  ) {
     super(message);
     this.name = "UserInfoServiceError";
   }

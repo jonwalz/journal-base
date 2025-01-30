@@ -1,5 +1,9 @@
 import { UserInfoRepository } from "../repositories/user-info.repository";
-import type { IUserInfo, ICreateUserInfo, IUpdateUserInfo } from "../types/user-info";
+import type {
+  IUserInfo,
+  ICreateUserInfo,
+  IUpdateUserInfo,
+} from "../types/user-info";
 import { ValidationError } from "../utils/errors";
 
 export class UserInfoService {
@@ -18,7 +22,10 @@ export class UserInfoService {
     return await this.userInfoRepository.findByUserId(userId);
   }
 
-  async updateUserInfo(userId: string, data: IUpdateUserInfo): Promise<IUserInfo> {
+  async updateUserInfo(
+    userId: string,
+    data: IUpdateUserInfo
+  ): Promise<IUserInfo> {
     if (Object.keys(data).length === 0) {
       throw new ValidationError("No update data provided");
     }
@@ -55,13 +62,18 @@ export class UserInfoService {
     }
   }
 
-  private validateGrowthGoals(goals: { shortTerm: string[]; longTerm: string[] }): void {
+  private validateGrowthGoals(goals: {
+    shortTerm: string[];
+    longTerm: string[];
+  }): void {
     if (!Array.isArray(goals.shortTerm) || !Array.isArray(goals.longTerm)) {
       throw new ValidationError("Growth goals must be arrays");
     }
 
-    if (goals.shortTerm.some(goal => typeof goal !== "string") || 
-        goals.longTerm.some(goal => typeof goal !== "string")) {
+    if (
+      goals.shortTerm.some((goal) => typeof goal !== "string") ||
+      goals.longTerm.some((goal) => typeof goal !== "string")
+    ) {
       throw new ValidationError("Growth goals must be strings");
     }
   }

@@ -9,6 +9,7 @@ import { env } from "../../config/environment";
 import type { IEntry } from "../../types";
 import { AppError } from "../../utils/errors";
 import { langchainAIServiceClaude } from "./instances";
+import logger from "../../utils/logger";
 
 export class AIService {
   private zepClient: ZepClient;
@@ -30,7 +31,7 @@ export class AIService {
         },
       });
     } catch (error) {
-      console.error("Failed to initialize user memory:", error);
+      logger.error("Failed to initialize user memory:", { error });
       throw new AppError(
         500,
         "AI_SERVICE_ERROR",
@@ -54,7 +55,7 @@ export class AIService {
 
       return this.convertZepMemoryResult(memories[0]);
     } catch (error) {
-      console.error("Failed to search memory:", error);
+      logger.error("Failed to search memory:", { error });
       throw new AppError(500, "AI_SERVICE_ERROR", "Failed to search memory");
     }
   }
@@ -96,7 +97,7 @@ export class AIService {
         ...parsedMessage,
         { context: zepSession.context },
       ];
-      console.log("Message with context:", messageWithContext);
+      logger.info("Message with context:", { messageWithContext });
 
       // Use LangChain for chat with streaming support
       const response = await langchainAIServiceClaude.chat(
@@ -105,7 +106,7 @@ export class AIService {
         onProgress
       );
 
-      console.log("AI Chat Response:", response);
+      logger.info("AI Chat Response:", { response });
       // Store AI response in memory
       await this.zepClient.memory.add(sessionId, {
         messages: [
@@ -122,7 +123,7 @@ export class AIService {
 
       return response;
     } catch (error) {
-      console.error("Failed to process chat message:", error);
+      logger.error("Failed to process chat message:", { error });
       throw new AppError(
         500,
         "AI_SERVICE_ERROR",
@@ -136,7 +137,7 @@ export class AIService {
       const response = await langchainAIServiceClaude.generateText(prompt);
       return { message: response };
     } catch (error) {
-      console.error("Failed to generate text:", error);
+      logger.error("Failed to generate text:", { error });
       throw new AppError(500, "AI_SERVICE_ERROR", "Failed to generate text");
     }
   }
@@ -247,7 +248,7 @@ export class AIService {
         growthIndicators,
       };
     } catch (error) {
-      console.error("Failed to analyze entry content:", error);
+      logger.error("Failed to analyze entry content:", { error });
       throw new AppError(
         500,
         "AI_SERVICE_ERROR",
@@ -289,7 +290,7 @@ export class AIService {
         growthIndicators,
       };
     } catch (error) {
-      console.error("Failed to analyze entry:", error);
+      logger.error("Failed to analyze entry:", { error });
       throw new AppError(500, "AI_SERVICE_ERROR", "Failed to analyze entry");
     }
   }
@@ -307,7 +308,7 @@ export class AIService {
         message: "Data successfully added to graph",
       };
     } catch (error) {
-      console.error("Error adding data to graph:", error);
+      logger.error("Error adding data to graph:", { error });
       throw new AppError(
         500,
         "AI_SERVICE_ERROR",
