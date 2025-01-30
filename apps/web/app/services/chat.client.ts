@@ -1,4 +1,5 @@
 import { WebSocketClient } from "./websocket.client";
+import { logger } from "~/utils/logger"; // Adjust the import path as needed
 
 export interface IChatMessage {
   role: "user" | "assistant";
@@ -11,20 +12,14 @@ export interface IChatResponse {
 }
 
 export class ChatClientError extends Error {
-  constructor(
-    message: string,
-    public override cause?: unknown
-  ) {
+  constructor(message: string, public override cause?: unknown) {
     super(message);
     this.name = "ChatClientError";
   }
 }
 
 export class ChatClient {
-  private static messageCallbacks: Map<
-    string,
-    (response: IChatResponse) => void
-  > = new Map();
+  private static messageCallbacks: Map<string, (response: IChatResponse) => void> = new Map();
   private static streamCallbacks: Set<(chunk: string) => void> = new Set();
   private static isInitialized = false;
   private static connectionPromise: Promise<void> | null = null;
@@ -38,20 +33,20 @@ export class ChatClient {
   }
 
   private static async ensureConnection(): Promise<void> {
-    console.log("ChatClient: Ensuring connection...");
+    logger.info("ChatClient: Ensuring connection...");
     if (this.isInitialized && !this.isCleaningUp) {
-      console.log("ChatClient: Connection already initialized");
+      logger.info("ChatClient: Connection already initialized");
       return;
     }
 
     if (this.connectionPromise) {
-      console.log("ChatClient: Connection in progress, waiting...");
+      logger.info("ChatClient: Connection in progress, waiting...");
       try {
         await this.connectionPromise;
-        console.log("ChatClient: Existing connection promise resolved");
+        logger.info("ChatClient: Existing connection promise resolved");
         return;
       } catch (error) {
-        console.error("ChatClient: Existing connection promise failed:", error);
+        logger.error("ChatClient: Existing connection promise failed:", error);
         this.connectionPromise = null;
       }
     }
@@ -61,7 +56,7 @@ export class ChatClient {
         onMessage: (data) => {
           try {
             const response = JSON.parse(data as string);
-            console.log("ChatClient: Received message:", response);
+            logger.debug("ChatClient: Received message:", response);
 
             if (response.isPartial) {
               // Handle streaming message chunks
@@ -80,7 +75,7 @@ export class ChatClient {
                 this.messageCallbacks.delete(messageId);
               }
             } else if (response.type === "error") {
-              console.error("ChatClient: Received error:", response);
+              logger.error("ChatClient: Received error:", response);
               const messageId = response.payload?.id;
               if (messageId) {
                 const callback = this.messageCallbacks.get(messageId);
@@ -94,34 +89,28 @@ export class ChatClient {
               }
             }
           } catch (error) {
-            console.error("ChatClient: Error processing message:", error);
+            logger.error("ChatClient: Error processing message:", error);
           }
         },
         onError: (error) => {
-          console.error("ChatClient: WebSocket error:", error);
+          logger.error("ChatClient: WebSocket error:", error);
           reject(new ChatClientError("WebSocket connection failed", error));
         },
         onClose: () => {
-          console.log("ChatClient: WebSocket connection closed");
+          logger.info("ChatClient: WebSocket connection closed");
           this.isInitialized = false;
           this.connectionPromise = null;
         },
       })
         .then(() => {
-          console.log("ChatClient: WebSocket connection established");
+          logger.info("ChatClient: WebSocket connection established");
           this.isInitialized = true;
           resolve();
         })
         .catch((error) => {
-          console.error(
-            "ChatClient: Failed to establish WebSocket connection:",
-            error
-          );
+          logger.error("ChatClient: Failed to establish WebSocket connection:", error);
           reject(
-            new ChatClientError(
-              "Failed to establish WebSocket connection",
-              error
-            )
+            new ChatClientError("Failed to establish WebSocket connection", error)
           );
         });
     });
@@ -139,19 +128,16 @@ export class ChatClient {
     userId: string
   ): Promise<IChatResponse> {
     await this.ensureConnection();
-    if (
-      messages.length === 0 ||
-      messages.every((m) => m.content.trim() === "")
-    ) {
-      console.log("ChatClient: Connection test message");
+    if (messages.length === 0 || messages.every((m) => m.content.trim() === "")) {
+      logger.info("ChatClient: Connection test message");
       return { id: "connection-test", message: "" };
     }
 
-    console.log("ChatClient: Sending messages...");
+    logger.info("ChatClient: Sending messages...");
     return new Promise((resolve, reject) => {
       try {
         const messageId = window.crypto.randomUUID();
-        console.log("ChatClient: Created message ID:", messageId);
+        logger.debug("ChatClient: Created message ID:", messageId);
 
         const payload = {
           type: "chat_message",
@@ -176,7 +162,7 @@ export class ChatClient {
   }
 
   static cleanup() {
-    console.log("ChatClient: Cleaning up...");
+    logger.info("ChatClient: Cleaning up...");
     this.isCleaningUp = true;
     this.messageCallbacks.clear();
     this.streamCallbacks.clear();
