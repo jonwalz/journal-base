@@ -49,6 +49,7 @@ export async function action({ request }: { request: Request }) {
 export default function Chat() {
   const formRef = useRef<HTMLFormElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const assistantMessageIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +91,7 @@ export default function Chat() {
 
       // Create a placeholder for the assistant's response
       const assistantMessageId = window.crypto.randomUUID();
+      assistantMessageIdRef.current = assistantMessageId;
       setMessages((currentMessages) => [
         ...currentMessages,
         {
@@ -100,24 +102,6 @@ export default function Chat() {
           isPartial: true,
         },
       ]);
-
-      // Set up streaming message handler
-      ChatClient.onStreamMessage((chunk: string) => {
-        setMessages((currentMessages) => {
-          const updatedMessages = [...currentMessages];
-          const streamingMessageIndex = updatedMessages.findIndex(
-            (m) => m.id === assistantMessageId
-          );
-          if (streamingMessageIndex !== -1) {
-            updatedMessages[streamingMessageIndex] = {
-              ...updatedMessages[streamingMessageIndex],
-              content: updatedMessages[streamingMessageIndex].content + chunk,
-              status: "receiving",
-            };
-          }
-          return updatedMessages;
-        });
-      });
 
       const response = await ChatClient.sendMessage(
         messageHistory,
@@ -221,6 +205,27 @@ export default function Chat() {
       initializeConnection();
     }
 
+    // Register the onStreamMessage handler
+    ChatClient.onStreamMessage((chunk: string) => {
+      if (assistantMessageIdRef.current) {
+        setMessages((currentMessages) => {
+          const updatedMessages = [...currentMessages];
+          const streamingMessageIndex = updatedMessages.findIndex(
+            (m) => m.id === assistantMessageIdRef.current
+          );
+          if (streamingMessageIndex !== -1) {
+            updatedMessages[streamingMessageIndex] = {
+              ...updatedMessages[streamingMessageIndex],
+              content:
+                updatedMessages[streamingMessageIndex].content + chunk,
+              status: "receiving",
+            };
+          }
+          return updatedMessages;
+        });
+      }
+    });
+
     // Cleanup only when component unmounts
     return () => {
       mounted = false;
@@ -260,7 +265,9 @@ export default function Chat() {
                   <span className="text-sm text-gray-500 ml-2">Sending...</span>
                 )}
                 {message.status === "streaming" && (
-                  <span className="text-sm text-gray-500 ml-2">Thinking...</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    Thinking...
+                  </span>
                 )}
                 {message.status === "receiving" && (
                   <span className="text-sm text-gray-500 ml-2">▋</span>
