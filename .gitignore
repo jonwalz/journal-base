@@ -45,3 +45,5 @@ out/
 .temp/
 .aider.chat.history.md
 .aider.input.history
+
+.turbo
