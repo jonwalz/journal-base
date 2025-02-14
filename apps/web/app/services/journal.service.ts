@@ -3,6 +3,7 @@ import {
   CreateJournalInput,
   JournalServiceError,
   Journal,
+  JournalEntry,
 } from "~/types/journal";
 
 export type { JournalServiceError };
@@ -91,9 +92,27 @@ export class JournalService {
     }
   }
 
-  static async getEntries(journalId: string, options: RequestOptions = {}) {
+  static async updateEntry(
+    journalId: string,
+    entryId: string,
+    content: string,
+    options: RequestOptions = {}
+  ): Promise<unknown> {
     try {
-      const response = await ApiClient.get(`/journals/${journalId}/entries`, options);
+      const response = await ApiClient.put(
+        `/journals/${journalId}/entries/${entryId}`,
+        { content },
+        options
+      );
+      return response.data;
+    } catch (error) {
+      throw new JournalServiceError("Failed to update journal entry", error);
+    }
+  }
+
+  static async getEntries(journalId: string, options: RequestOptions = {}): Promise<JournalEntry[]> {
+    try {
+      const response = await ApiClient.get<JournalEntry[]>(`/journals/${journalId}/entries`, options);
       return response.data;
     } catch (error) {
       throw new JournalServiceError("Failed to fetch journal entries", error);

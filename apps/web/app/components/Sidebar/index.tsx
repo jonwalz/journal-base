@@ -28,6 +28,7 @@ import { BreadcrumbNavigation } from "../Breadcrumb";
 import { sidebarOptions } from "./constants";
 import { JournalSelector } from "./JournalSelector";
 import { UserMenu } from "./UserMenu";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -120,6 +121,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 ))}
               </SidebarMenu>
             </SidebarGroup>
+
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>

@@ -1,14 +1,4 @@
-import {
-  Book,
-  Clock,
-  ListTodo,
-  MessageCircle,
-  Target,
-  LineChart,
-  Star,
-  ClipboardList,
-  LucideIcon,
-} from "lucide-react";
+import { Book, MessageCircle, Target, LucideIcon } from "lucide-react";
 
 export type JournalType = "growth";
 
@@ -20,7 +10,6 @@ interface SidebarItem {
 
 export const sidebarOptions: SidebarItem[] = [
   { name: "Today's Entry", icon: Book, href: "/todays-entry" },
-  { name: "Entry History", icon: Clock, href: "/journals/history" },
   { name: "Goal Tracking", icon: Target, href: "/goal-tracking" },
   { name: "Growth Chat", icon: MessageCircle, href: "/chat" },
   // { name: "Action Items", icon: ListTodo, href: "/action-items" },

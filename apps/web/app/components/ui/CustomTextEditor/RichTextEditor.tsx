@@ -122,7 +122,13 @@ const constructImportMap = (): DOMConversionMap => {
   return importMap;
 };
 
-export function Editor({ onChange }: { onChange?: (content: string) => void }) {
+export function Editor({
+  onChange,
+  initialContent,
+}: {
+  onChange?: (content: string) => void;
+  initialContent?: string;
+}) {
   const handleEditorChange = (editorState: EditorState) => {
     editorState.read(() => {
       const root = $getRoot();
@@ -142,6 +148,15 @@ export function Editor({ onChange }: { onChange?: (content: string) => void }) {
       throw error;
     },
     theme: ExampleTheme,
+    editorState: initialContent
+      ? () => {
+          const root = $getRoot();
+          const paragraph = new ParagraphNode();
+          const text = new TextNode(initialContent);
+          paragraph.append(text);
+          root.append(paragraph);
+        }
+      : undefined,
   };
 
   return (

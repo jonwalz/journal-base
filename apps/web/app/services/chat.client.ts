@@ -1,5 +1,5 @@
+import { logger } from "src/utils/logger";
 import { WebSocketClient } from "./websocket.client";
-import { logger } from "~/utils/logger"; // Adjust the import path as needed
 
 export interface IChatMessage {
   role: "user" | "assistant";
@@ -12,14 +12,20 @@ export interface IChatResponse {
 }
 
 export class ChatClientError extends Error {
-  constructor(message: string, public override cause?: unknown) {
+  constructor(
+    message: string,
+    public override cause?: unknown
+  ) {
     super(message);
     this.name = "ChatClientError";
   }
 }
 
 export class ChatClient {
-  private static messageCallbacks: Map<string, (response: IChatResponse) => void> = new Map();
+  private static messageCallbacks: Map<
+    string,
+    (response: IChatResponse) => void
+  > = new Map();
   private static streamCallbacks: Set<(chunk: string) => void> = new Set();
   private static isInitialized = false;
   private static connectionPromise: Promise<void> | null = null;
@@ -108,9 +114,15 @@ export class ChatClient {
           resolve();
         })
         .catch((error) => {
-          logger.error("ChatClient: Failed to establish WebSocket connection:", error);
+          logger.error(
+            "ChatClient: Failed to establish WebSocket connection:",
+            error
+          );
           reject(
-            new ChatClientError("Failed to establish WebSocket connection", error)
+            new ChatClientError(
+              "Failed to establish WebSocket connection",
+              error
+            )
           );
         });
     });
@@ -128,7 +140,10 @@ export class ChatClient {
     userId: string
   ): Promise<IChatResponse> {
     await this.ensureConnection();
-    if (messages.length === 0 || messages.every((m) => m.content.trim() === "")) {
+    if (
+      messages.length === 0 ||
+      messages.every((m) => m.content.trim() === "")
+    ) {
       logger.info("ChatClient: Connection test message");
       return { id: "connection-test", message: "" };
     }

@@ -47,7 +47,7 @@ export const journalController = new Elysia({ prefix: "/journals" })
       const userInfoService = new UserInfoService();
       // TODO: Move to middleware
       let userInfo = await userInfoService.getUserInfo(user.id).catch(() => {
-        return null;
+        return undefined;
       });
 
       if (!userInfo) {
