@@ -1,6 +1,7 @@
 export interface IUserInfo {
   id: string;
   userId: string;
+  email: string; // Added email field
   firstName: string;
   lastName: string;
   bio: string | null | undefined;

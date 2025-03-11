@@ -1,4 +1,5 @@
 import { UserInfoRepository } from "../repositories/user-info.repository";
+import { UserRepository } from "../repositories/user.repository";
 import type {
   IUserInfo,
   ICreateUserInfo,
@@ -19,7 +20,17 @@ export class UserInfoService {
   }
 
   async getUserInfo(userId: string): Promise<IUserInfo> {
-    return await this.userInfoRepository.findByUserId(userId);
+    const userInfo = await this.userInfoRepository.findByUserId(userId);
+    
+    // Get the user email from the users repository
+    const userRepository = new UserRepository();
+    const user = await userRepository.findById(userInfo.userId);
+    
+    // Include the email in the user info response
+    return {
+      ...userInfo,
+      email: user.email
+    };
   }
 
   async updateUserInfo(
@@ -82,7 +93,8 @@ export class UserInfoService {
     try {
       Intl.DateTimeFormat(undefined, { timeZone: timezone });
       return true;
-    } catch (e) {
+    } catch {
+      // Ignore the error and return false for invalid timezone
       return false;
     }
   }

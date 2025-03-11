@@ -65,6 +65,7 @@ export const loader = async ({ request }: { request: Request }) => {
       userInfo: {
         id: "",
         userId: "",
+        email: "",
         firstName: "",
         lastName: "",
         timezone: "",

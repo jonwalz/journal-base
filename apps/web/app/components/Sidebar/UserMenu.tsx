@@ -99,7 +99,7 @@ export function UserMenu() {
                 {displayName}
               </span>
               <span className="truncate text-xs text-black dark:text-white">
-                {userInfo?.timezone || "Loading..."}
+                {userInfo?.email || "Loading..."}
               </span>
             </div>
             <ChevronsUpDown className="ml-auto size-4 text-black dark:text-white" />
@@ -121,7 +121,7 @@ export function UserMenu() {
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{displayName}</span>
                 <span className="truncate text-xs">
-                  {userInfo?.timezone || "Loading..."}
+                  {userInfo?.email || "Loading..."}
                 </span>
               </div>
             </div>
