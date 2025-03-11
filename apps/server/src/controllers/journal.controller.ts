@@ -1,14 +1,20 @@
 import { Elysia, t } from "elysia";
 import { JournalService } from "../services/journal.service";
 import { authMiddleware } from "../middleware/auth";
-import { ValidationError } from "../utils/errors";
+import { ValidationError, AppError } from "../utils/errors";
 import { UserInfoService } from "../services/user-info.service";
 
 export const journalController = new Elysia({ prefix: "/journals" })
   .use(authMiddleware)
   .post(
     "/",
-    async ({ body, user }) => {
+    async ({
+      body,
+      user,
+    }: {
+      body: { title: string };
+      user: { id: string };
+    }) => {
       const journalService = new JournalService();
       return await journalService.createJournal(user.id, body.title);
     },
@@ -16,7 +22,7 @@ export const journalController = new Elysia({ prefix: "/journals" })
       body: t.Object({
         title: t.String({ minLength: 1, maxLength: 255 }),
       }),
-      error: ({ error }) => {
+      error: ({ error }: { error: Error | AppError }) => {
         if (error.message === "Validation Failed") {
           throw new ValidationError(error.message);
         }
@@ -26,12 +32,12 @@ export const journalController = new Elysia({ prefix: "/journals" })
   )
   .get(
     "/",
-    async ({ user }) => {
+    async ({ user }: { user: { id: string } }) => {
       const journalService = new JournalService();
       return await journalService.getJournals(user.id);
     },
     {
-      error: ({ error }) => {
+      error: ({ error }: { error: Error | AppError }) => {
         if (error.message === "Validation Failed") {
           throw new ValidationError(error.message);
         }
@@ -41,7 +47,15 @@ export const journalController = new Elysia({ prefix: "/journals" })
   )
   .post(
     "/:journalId/entries",
-    async ({ params: { journalId }, body, user }) => {
+    async ({
+      params: { journalId },
+      body,
+      user,
+    }: {
+      params: { journalId: string };
+      body: { content: string };
+      user: { id: string; email: string };
+    }) => {
       const journalService = new JournalService();
 
       const userInfoService = new UserInfoService();
@@ -72,7 +86,7 @@ export const journalController = new Elysia({ prefix: "/journals" })
       body: t.Object({
         content: t.String({ minLength: 1 }),
       }),
-      error: ({ error }) => {
+      error: ({ error }: { error: Error | AppError }) => {
         if (error.message === "Validation Failed") {
           throw new ValidationError(error.message);
         }
@@ -80,7 +94,47 @@ export const journalController = new Elysia({ prefix: "/journals" })
       },
     }
   )
-  .get("/:journalId/entries", async ({ params: { journalId }, user }) => {
-    const journalService = new JournalService();
-    return await journalService.getEntries(user.id, journalId);
-  });
+  .get(
+    "/:journalId/entries",
+    async ({
+      params: { journalId },
+      user,
+    }: {
+      params: { journalId: string };
+      user: { id: string };
+    }) => {
+      const journalService = new JournalService();
+      return await journalService.getEntries(user.id, journalId);
+    }
+  )
+  .put(
+    "/:journalId/entries/:entryId",
+    async ({
+      params: { journalId, entryId },
+      body,
+      user,
+    }: {
+      params: { journalId: string; entryId: string };
+      body: { content: string };
+      user: { id: string };
+    }) => {
+      const journalService = new JournalService();
+      return await journalService.updateEntry(
+        user.id,
+        journalId,
+        entryId,
+        body.content
+      );
+    },
+    {
+      body: t.Object({
+        content: t.String({ minLength: 1 }),
+      }),
+      error: ({ error }: { error: Error | AppError }) => {
+        if (error.message === "Validation Failed") {
+          throw new ValidationError(error.message);
+        }
+        throw error;
+      },
+    }
+  );

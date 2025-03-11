@@ -95,6 +95,32 @@ export class JournalService {
     return await this.journalRepository.getEntries(journalId);
   }
 
+  async updateEntry(
+    userId: string,
+    journalId: string,
+    entryId: string,
+    content: string
+  ): Promise<IEntry> {
+    // Verify journal ownership
+    const journal = await this.journalRepository.findById(journalId);
+    if (journal.userId !== userId) {
+      throw new AuthorizationError("You do not have access to this journal");
+    }
+
+    // Update the entry
+    const entry = await this.journalRepository.updateEntry(entryId, { content });
+    if (!entry) {
+      throw new Error("Entry not found");
+    }
+
+    // Analyze the entry asynchronously
+    this.analyzeEntry(entry.id, content).catch((error) => {
+      console.error("Error analyzing entry:", error);
+    });
+
+    return entry;
+  }
+
   private async analyzeEntry(entryId: string, content: string): Promise<void> {
     try {
       // Analyze sentiment and growth indicators using Zep

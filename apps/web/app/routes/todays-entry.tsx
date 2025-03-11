@@ -122,7 +122,7 @@ export async function action({ request }: ActionFunctionArgs) {
 const TherapeuticJournalEntry = () => {
   const [showPrompt, setShowPrompt] = useState(true);
   const [content, setContent] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
   const navigate = useNavigate();
@@ -223,29 +223,29 @@ const TherapeuticJournalEntry = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-black dark:text-white">
+                    <TableHead className="text-black dark:text-white dark:bg-main-700">
                       Date
                     </TableHead>
-                    <TableHead className="text-black dark:text-white">
+                    <TableHead className="text-black dark:text-white dark:bg-main-700">
                       Preview
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.map((entry) => (
-                    <TableRow 
+                    <TableRow
                       key={entry.id}
                       className="cursor-pointer hover:bg-accent/10"
                       onClick={() => navigate(`/journal/edit/${entry.id}`)}
                     >
-                      <TableCell className="whitespace-nowrap text-black dark:text-white">
+                      <TableCell className="whitespace-nowrap text-black dark:text-white dark:bg-main-700">
                         {new Date(entry.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
                         })}
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-black dark:text-white">
+                      <TableCell className="max-w-[200px] truncate text-black dark:text-white dark:bg-main-700">
                         {entry.content.replace(/<[^>]*>/g, "")}
                       </TableCell>
                     </TableRow>

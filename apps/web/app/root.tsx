@@ -24,6 +24,7 @@ import {
 import { Theme } from "./types";
 import { UserInfoService } from "./services/user-info.service";
 import { getSelectedJournalId } from "./utils/journal.server";
+import { Toaster } from "sonner";
 
 export type RootLoaderData = {
   theme: Theme;
@@ -126,6 +127,27 @@ export default function App() {
       <body>
         <ThemeProvider theme={data.theme}>
           <Outlet context={data} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: 'bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none rounded-base',
+                title: 'font-bold',
+                description: 'text-sm',
+                actionButton: 'bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none',
+                closeButton: 'bg-transparent hover:bg-transparent text-black dark:text-white'
+              },
+              style: {
+                padding: '1rem',
+              },
+              success: {
+                className: 'border-green-600 dark:border-green-400',
+              },
+              error: {
+                className: 'border-red-600 dark:border-red-400',
+              }
+            }}
+          />
         </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
