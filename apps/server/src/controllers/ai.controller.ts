@@ -44,10 +44,15 @@ export const aiController = new Elysia({ prefix: "/ai" })
       });
     },
     error: ({ error }) => {
+      // Type guard to check if error has message and stack properties
+      const isAppError = (err: unknown): err is { message: string; stack?: string } => {
+        return typeof err === 'object' && err !== null && 'message' in err;
+      };
+      
       console.error("WebSocket: Error occurred", {
         error,
-        message: error.message,
-        stack: error.stack,
+        message: isAppError(error) ? error.message : 'Unknown error',
+        stack: isAppError(error) && error.stack ? error.stack : undefined,
       });
     },
     message: async (ws, data: unknown) => {
@@ -98,7 +103,7 @@ export const aiController = new Elysia({ prefix: "/ai" })
   })
   .post(
     "/analyze",
-    async ({ body }) => {
+    async ({ body }: { body: { content: string } }) => {
       const analysis = await aiService.analyzeEntryContent(body.content);
       return analysis;
     },
@@ -134,7 +139,7 @@ export const aiController = new Elysia({ prefix: "/ai" })
   )
   .post(
     "/graph",
-    async ({ body }) => {
+    async ({ body }: { body: { userId: string; data: any } }) => {
       const result = await aiService.addToGraph(body.userId, body.data);
       return result;
     },

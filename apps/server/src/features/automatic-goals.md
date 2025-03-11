@@ -1,4 +1,4 @@
-# Automatic Goals Feature - PRD
+# Automatic Goals Feature - PRD (Implementation Status)
 
 ## 1. Overview
 
@@ -61,6 +61,8 @@ This feature integrates with:
 
 ### 3.1 Database Schema
 
+**STATUS: NOT STARTED**
+
 ```sql
 -- Goals table
 CREATE TABLE goals (
@@ -89,6 +91,8 @@ CREATE INDEX idx_goals_status ON goals(user_id, accepted_at, completed_at, delet
 ```
 
 ### 3.2 Service Interface
+
+**STATUS: NOT STARTED**
 
 ```typescript
 interface IGoalService {
@@ -124,6 +128,8 @@ interface IGoalService {
 
 ### 3.3 Type Definitions
 
+**STATUS: NOT STARTED**
+
 ```typescript
 interface Goal {
   id: string;
@@ -157,6 +163,8 @@ interface GoalAnalytics {
 
 ### 4.1 Core Components
 
+**STATUS: NOT STARTED**
+
 1. **GoalService**
    - Implements the IGoalService interface
    - Handles goal generation, management, and analytics
@@ -178,6 +186,8 @@ interface GoalAnalytics {
 
 ### 4.2 API Endpoints
 
+**STATUS: NOT STARTED**
+
 ```typescript
 // Goal management endpoints
 app.post('/api/goals/generate', generateGoalsHandler);
@@ -191,6 +201,8 @@ app.get('/api/goals/analytics', getGoalAnalyticsHandler);
 ```
 
 ### 4.3 Integration with Existing Services
+
+**STATUS: NOT STARTED**
 
 1. **Journal Entry Service Integration**
    - Add event emission after journal entry creation
@@ -227,11 +239,15 @@ app.get('/api/goals/analytics', getGoalAnalyticsHandler);
 
 ### 6.1 Phase 1: Development
 
+**STATUS: NOT STARTED**
+
 - Implement database schema
 - Develop core GoalService and repository
 - Implement basic goal generation logic
 
 ### 6.2 Phase 2: Testing
+
+**STATUS: NOT STARTED**
 
 - Internal testing with sample journal entries
 - Refine goal generation algorithms
@@ -239,11 +255,15 @@ app.get('/api/goals/analytics', getGoalAnalyticsHandler);
 
 ### 6.3 Phase 3: Beta Release
 
+**STATUS: NOT STARTED**
+
 - Release to limited user group
 - Collect feedback on goal quality and relevance
 - Iterate on goal generation algorithms
 
 ### 6.4 Phase 4: Full Release
+
+**STATUS: NOT STARTED**
 
 - Release to all users
 - Monitor system performance

@@ -49,6 +49,17 @@ export class UserRepository {
     return user;
   }
 
+  /**
+   * Get all active users in the system
+   * @returns Array of active users
+   */
+  async getAllActiveUsers(): Promise<IUser[]> {
+    // For now, we consider all users as active
+    // In the future, we might add an 'active' flag to the users table
+    const activeUsers = await db.select().from(users);
+    return activeUsers;
+  }
+
   async update(id: string, updates: Partial<IUser>): Promise<IUser> {
     const [user] = await db
       .update(users)

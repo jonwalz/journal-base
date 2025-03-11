@@ -316,6 +316,126 @@ export class AIService {
       );
     }
   }
+
+  async getGrowthIndicators(content: string): Promise<GrowthIndicator[]> {
+    try {
+      const prompt = `
+        Analyze the following journal entry for indicators of a growth mindset. 
+        Look for evidence of resilience, effort, embracing challenges, seeking feedback, and learning from setbacks.
+        
+        Journal entry:
+        ${content}
+        
+        Return a JSON array of objects, each with a 'type' (one of: resilience, effort, challenge, feedback, learning) and 'evidence' (the relevant text from the entry).
+        Format: [{"type": "resilience", "evidence": "text from entry showing resilience"}]
+        If no indicators are found, return an empty array: []
+      `;
+
+      const response = await this.generateText(prompt);
+      let indicators: GrowthIndicator[] = [];
+
+      try {
+        indicators = JSON.parse(response.message) as GrowthIndicator[];
+      } catch (parseError) {
+        logger.error("Failed to parse AI response as JSON:", {
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+          response: response.message,
+        });
+      }
+
+      return indicators;
+    } catch (error) {
+      logger.error("Failed to get growth indicators:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }
+  }
+
+  async generateSummary(entries: IEntry[]): Promise<string> {
+    try {
+      // Prepare the entries for the prompt
+      const entriesText = entries
+        .map(
+          (entry) =>
+            `Date: ${new Date(entry.createdAt).toLocaleDateString()}
+Content: ${entry.content}`
+        )
+        .join("\n\n");
+
+      const prompt = `
+        Summarize the following journal entries, highlighting patterns, growth, and insights.
+        Focus on identifying themes, progress, and areas for reflection.
+        
+        Journal entries:
+        ${entriesText}
+        
+        Provide a concise summary (maximum 200 words) that captures the essence of these entries.
+      `;
+
+      const response = await this.generateText(prompt);
+      return response.message;
+    } catch (error) {
+      logger.error("Failed to generate summary:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return "";
+    }
+  }
+
+  async generateGoalSuggestions(content: string): Promise<Array<{
+    content: string;
+    targetDate?: string;
+    metricType?: string;
+  }>> {
+    try {
+      // Prepare the prompt for the AI service
+      const prompt = `
+        Based on the following journal content, generate 3 actionable growth-oriented goals that would help the user develop a growth mindset.
+        Each goal should be specific, measurable, and have a clear timeframe.
+        For each goal, also identify which growth mindset metric it relates to (resilience, effort, challenge, feedback, or learning).
+        
+        Journal content:
+        ${content}
+        
+        Format your response as a JSON array with objects containing:
+        - content: The goal text
+        - targetDate: A target date for completion (YYYY-MM-DD format)
+        - metricType: The related growth mindset metric
+        
+        Example:
+        [
+          {
+            "content": "Practice piano for 20 minutes daily for the next week, even when it feels challenging",
+            "targetDate": "2025-03-18",
+            "metricType": "effort"
+          }
+        ]
+      `;
+
+      // Call the AI service to generate goal suggestions
+      const aiResponse = await this.generateText(prompt);
+
+      // Parse the AI response as JSON
+      let suggestions;
+      try {
+        suggestions = JSON.parse(aiResponse.message);
+      } catch (error) {
+        logger.error("Failed to parse AI response as JSON:", {
+          error: error instanceof Error ? error.message : String(error),
+          response: aiResponse.message,
+        });
+        return [];
+      }
+
+      return suggestions;
+    } catch (error) {
+      logger.error("Error generating goal suggestions:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }
+  }
 }
 
 export const aiService = new AIService();

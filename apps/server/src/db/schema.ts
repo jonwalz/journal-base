@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, date } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -97,6 +97,22 @@ export const userInfo = pgTable("user_info", {
     shortTerm: [],
     longTerm: []
   }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const goals = pgTable("goals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  journalEntryId: uuid("journal_entry_id").references(() => entries.id),
+  content: text("content").notNull(),
+  suggestedAt: timestamp("suggested_at").defaultNow().notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  completedAt: timestamp("completed_at"),
+  deletedAt: timestamp("deleted_at"),
+  targetDate: date("target_date"),
+  relatedMetricType: text("related_metric_type"),
+  sourceType: text("source_type").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -2,13 +2,13 @@ import { Elysia, t } from "elysia";
 import { MetricsService } from "../services/metrics.service";
 import { authMiddleware } from "../middleware/auth";
 import { ValidationError } from "../utils/errors";
-import type { DateRange } from "../types/metrics";
+import type { DateRange, MetricType } from "../types/metrics";
 
 export const metricsController = new Elysia({ prefix: "/metrics" })
   .use(authMiddleware)
   .post(
     "/",
-    async ({ body, user }) => {
+    async ({ body, user }: { body: { type: MetricType; value: number; notes?: string }; user: { id: string } }) => {
       const metricsService = new MetricsService();
       return await metricsService.recordMetric(
         user.id,
@@ -29,7 +29,7 @@ export const metricsController = new Elysia({ prefix: "/metrics" })
         value: t.Number(),
         notes: t.Optional(t.String()),
       }),
-      error: ({ error }) => {
+      error: ({ error }: { error: { message: string } }) => {
         if (error.message === "Validation Failed") {
           throw new ValidationError(error.message);
         }
