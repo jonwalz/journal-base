@@ -48,11 +48,12 @@ export async function action({ request }: ActionFunctionArgs) {
       password: password,
     });
 
-    // Set auth tokens in session
+    // Set auth tokens and user ID in session
     const cookie = await setAuthTokens(
       request,
       response.token,
-      response.sessionToken
+      response.sessionToken,
+      response.user.id
     );
 
     return redirect("/dashboard", {

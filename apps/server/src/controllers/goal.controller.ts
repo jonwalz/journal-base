@@ -266,4 +266,37 @@ export const goalController = new Elysia({ prefix: "/api/goals" })
       }
     },
     getGoalAnalyticsSchema
+  )
+
+  // Get count of new (suggested) goals for a user
+  .get(
+    "/new-count",
+    async ({ query, set }: { query: { userId?: string }; set: Context["set"] }) => {
+      try {
+        const { userId } = query;
+        
+        if (!userId) {
+          set.status = 400;
+          return { success: false, message: "User ID is required" };
+        }
+
+        const goals = await goalService.getGoals(userId, {
+          status: 'suggested',
+        });
+
+        return { success: true, count: goals.length };
+      } catch (error: unknown) {
+        logger.error("Error getting new goals count", {
+          error: error instanceof Error ? error.message : String(error),
+          userId: query.userId
+        });
+        set.status = 400;
+        return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
+    {
+      query: t.Object({
+        userId: t.Optional(t.String()),
+      }),
+    }
   );

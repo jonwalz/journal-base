@@ -389,7 +389,7 @@ Content: ${entry.content}`
     metricType?: string;
   }>> {
     try {
-      // Prepare the prompt for the AI service
+      // Prepare the prompt for the AI service with clearer instructions
       const prompt = `
         Based on the following journal content, generate 3 actionable growth-oriented goals that would help the user develop a growth mindset.
         Each goal should be specific, measurable, and have a clear timeframe.
@@ -398,12 +398,13 @@ Content: ${entry.content}`
         Journal content:
         ${content}
         
-        Format your response as a JSON array with objects containing:
+        IMPORTANT: Your response MUST be ONLY a valid JSON array with no explanatory text before or after. 
+        Each object in the array should contain:
         - content: The goal text
         - targetDate: A target date for completion (YYYY-MM-DD format)
         - metricType: The related growth mindset metric
         
-        Example:
+        Example of the EXACT format required:
         [
           {
             "content": "Practice piano for 20 minutes daily for the next week, even when it feels challenging",
@@ -415,11 +416,48 @@ Content: ${entry.content}`
 
       // Call the AI service to generate goal suggestions
       const aiResponse = await this.generateText(prompt);
+      
+      // Extract JSON from the response by looking for array brackets
+      let jsonStr = aiResponse.message;
+      
+      // Try to find JSON array in the response if it's not already valid JSON
+      if (jsonStr.trim()[0] !== '[') {
+        // Look for the first opening bracket of an array
+        const startIdx = jsonStr.indexOf('[');
+        if (startIdx !== -1) {
+          // Find the matching closing bracket
+          let openBrackets = 0;
+          let endIdx = -1;
+          
+          for (let i = startIdx; i < jsonStr.length; i++) {
+            if (jsonStr[i] === '[') openBrackets++;
+            if (jsonStr[i] === ']') openBrackets--;
+            
+            if (openBrackets === 0 && jsonStr[i] === ']') {
+              endIdx = i + 1;
+              break;
+            }
+          }
+          
+          if (endIdx !== -1) {
+            jsonStr = jsonStr.substring(startIdx, endIdx);
+          }
+        }
+      }
 
-      // Parse the AI response as JSON
+      // Parse the extracted JSON
       let suggestions;
       try {
-        suggestions = JSON.parse(aiResponse.message);
+        suggestions = JSON.parse(jsonStr);
+        
+        // Validate that we have an array of objects with required properties
+        if (!Array.isArray(suggestions)) {
+          throw new Error('Response is not an array');
+        }
+        
+        // Ensure each suggestion has at least the content property
+        suggestions = suggestions.filter(suggestion => suggestion && typeof suggestion.content === 'string');
+        
       } catch (error) {
         logger.error("Failed to parse AI response as JSON:", {
           error: error instanceof Error ? error.message : String(error),

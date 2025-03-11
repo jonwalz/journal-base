@@ -1,5 +1,13 @@
 {
   "version": "5",
   "dialect": "pg",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1741724316012,
+      "tag": "0000_moaning_maverick",
+      "breakpoints": true
+    }
+  ]
 }

@@ -15,6 +15,7 @@ import type { IUserInfo } from "./hooks/useUserInfo";
 import styles from "./tailwind.css?url";
 import { themeCookie } from "./utils/theme.server";
 import { ThemeProvider } from "./components/ThemeProvider";
+import GoalNotificationProvider from "./components/GoalNotificationProvider";
 import { JournalService } from "./services/journal.service";
 import {
   requireUserSession,
@@ -127,6 +128,7 @@ export default function App() {
       <body>
         <ThemeProvider theme={data.theme}>
           <Outlet context={data} />
+          <GoalNotificationProvider />
           <Toaster
             position="top-right"
             toastOptions={{

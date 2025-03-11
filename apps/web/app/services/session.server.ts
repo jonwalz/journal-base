@@ -27,11 +27,15 @@ export async function getSession(request: Request) {
 export async function setAuthTokens(
   request: Request,
   authToken: string,
-  sessionToken: string
+  sessionToken: string,
+  userId?: string
 ) {
   const session = await getSession(request);
   session.set("authToken", authToken);
   session.set("sessionToken", sessionToken);
+  if (userId) {
+    session.set("userId", userId);
+  }
   return sessionStorage.commitSession(session);
 }
 
@@ -43,6 +47,11 @@ export async function getAuthToken(request: Request) {
 export async function getSessionToken(request: Request) {
   const session = await getSession(request);
   return session.get("sessionToken");
+}
+
+export async function getUserId(request: Request) {
+  const session = await getSession(request);
+  return session.get("userId");
 }
 
 export async function requireUserSession(
@@ -68,8 +77,12 @@ export async function requireUserSession(
       AuthService.verifyAuthToken(authToken),
       AuthService.verifySessionToken(sessionToken),
     ]);
-
-    return { authToken, sessionToken };
+    
+    // Get the user ID from the session
+    const userId = session.get("userId");
+    console.log('Current session userId:', userId);
+    
+    return { authToken, sessionToken, userId };
   } catch (error) {
     // Clear the session if token verification fails
     throw redirect(redirectTo, {
