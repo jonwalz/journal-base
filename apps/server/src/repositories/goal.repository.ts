@@ -35,38 +35,29 @@ export class GoalRepository {
     if (filters?.status) {
       switch (filters.status) {
         case 'suggested':
-          // Suggested goals: not accepted, not completed, not deleted
+          // Suggested goals: not accepted, not completed
           conditions = and(
             conditions,
             isNull(goals.acceptedAt),
-            isNull(goals.completedAt),
-            isNull(goals.deletedAt)
+            isNull(goals.completedAt)
           ) as SQL<unknown>;
           break;
         case 'accepted':
-          // Accepted goals: accepted, not completed, not deleted
+          // Accepted goals: accepted, not completed
           conditions = and(
             conditions,
             not(isNull(goals.acceptedAt)),
-            isNull(goals.completedAt),
-            isNull(goals.deletedAt)
+            isNull(goals.completedAt)
           ) as SQL<unknown>;
           break;
         case 'completed':
-          // Completed goals: completed, not deleted
+          // Completed goals: completed
           conditions = and(
             conditions,
-            not(isNull(goals.completedAt)),
-            isNull(goals.deletedAt)
+            not(isNull(goals.completedAt))
           ) as SQL<unknown>;
           break;
-        case 'deleted':
-          // Deleted goals: deleted
-          conditions = and(
-            conditions,
-            not(isNull(goals.deletedAt))
-          ) as SQL<unknown>;
-          break;
+        // Remove 'deleted' case as we're now performing hard deletes
       }
     }
     
@@ -127,13 +118,17 @@ export class GoalRepository {
   }
 
   async deleteGoal(id: string): Promise<Goal | undefined> {
-    const [goal] = await db
-      .update(goals)
-      .set({ deletedAt: new Date(), updatedAt: new Date() })
-      .where(eq(goals.id, id))
-      .returning();
+    // First get the goal to return it before deletion
+    const goalToDelete = await this.getGoalById(id);
     
-    return goal ? this.mapDbGoalToGoal(goal) : undefined;
+    if (goalToDelete) {
+      // Perform a hard delete - completely remove the goal from the database
+      await db
+        .delete(goals)
+        .where(eq(goals.id, id));
+    }
+    
+    return goalToDelete;
   }
 
   async getGoalsByEntryId(entryId: string): Promise<Goal[]> {

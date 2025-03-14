@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Goal, GoalStatus, MetricType } from '~/types/goals';
-import { GoalService } from '~/services/goalService.client';
 import GoalList from './GoalList';
 import GoalFilters from './GoalFilters';
 import GoalStats from './GoalStats';
@@ -37,29 +36,60 @@ export default function GoalDashboard({ initialGoals = [], actionData }: GoalDas
     }
   }, [actionData]);
 
+  // Apply client-side filtering when filters change
   useEffect(() => {
-    // If we have initialGoals and no filters are applied, skip the initial fetch
-    if (initialGoals.length > 0 && 
-        filters.status === 'all' && 
-        filters.dateRange === 'all' && 
-        filters.metricType === 'all') {
-      setIsLoading(false);
-      return;
-    }
+    setIsLoading(true);
     
-    const loadGoals = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedGoals = await GoalService.getGoals(filters);
-        setGoals(fetchedGoals);
-      } catch (error) {
-        console.error('Failed to load goals:', error);
-      } finally {
-        setIsLoading(false);
+    // Apply filters to initialGoals
+    const filteredGoals = initialGoals.filter(goal => {
+      // Filter by status
+      if (filters.status !== 'all') {
+        if (filters.status === 'suggested' && (goal.acceptedAt || goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === 'accepted' && (!goal.acceptedAt || goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === 'completed' && (!goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === 'deleted' && !goal.deletedAt) {
+          return false;
+        }
       }
-    };
-
-    loadGoals();
+      
+      // Filter by metric type
+      if (filters.metricType !== 'all' && goal.relatedMetricType !== filters.metricType) {
+        return false;
+      }
+      
+      // Filter by date range
+      if (filters.dateRange !== 'all') {
+        const now = new Date();
+        const goalDate = new Date(goal.suggestedAt);
+        
+        if (filters.dateRange === 'today') {
+          return goalDate.toDateString() === now.toDateString();
+        }
+        
+        if (filters.dateRange === 'week') {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          return goalDate >= weekAgo;
+        }
+        
+        if (filters.dateRange === 'month') {
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(now.getMonth() - 1);
+          return goalDate >= monthAgo;
+        }
+      }
+      
+      return true;
+    });
+    
+    setGoals(filteredGoals);
+    setIsLoading(false);
   }, [filters, initialGoals]);
 
   return (
@@ -79,11 +109,6 @@ export default function GoalDashboard({ initialGoals = [], actionData }: GoalDas
       ) : (
         <GoalList 
           goals={goals} 
-          onGoalUpdate={(updatedGoal) => {
-            setGoals(goals.map(goal => 
-              goal.id === updatedGoal.id ? updatedGoal : goal
-            ));
-          }}
         />
       )}
     </div>

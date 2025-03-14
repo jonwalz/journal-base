@@ -93,6 +93,18 @@ export class ApiClient {
     await this.request(endpoint, { ...options, method: "DELETE" });
   }
 
+  static async patch<T>(
+    endpoint: string,
+    data: unknown,
+    options: RequestOptions = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      data,
+    });
+  }
+
   private static async addAuthHeaders(
     options: RequestOptions = {},
     request: Request

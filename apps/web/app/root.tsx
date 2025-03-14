@@ -129,7 +129,8 @@ export default function App() {
       <body>
         <ThemeProvider theme={data.theme}>
           <Outlet context={data} />
-          <GoalNotificationProvider />
+          {/* Pass userInfo directly to GoalNotificationProvider */}
+          <GoalNotificationProvider userInfo={data.userInfo} />
           <Toaster
             position="top-right"
             toastOptions={{
@@ -142,14 +143,10 @@ export default function App() {
               },
               style: {
                 padding: '1rem',
-              },
-              success: {
-                className: 'border-green-600 dark:border-green-400',
-              },
-              error: {
-                className: 'border-red-600 dark:border-red-400',
               }
             }}
+            // Apply custom styling for all toasts
+            className="custom-toaster"
           />
         </ThemeProvider>
         <ScrollRestoration />

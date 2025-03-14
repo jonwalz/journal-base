@@ -191,7 +191,27 @@ export const goalController = new Elysia({ prefix: "/api/goals" })
   )
 
   // Accept a goal
+  // Support both PATCH and POST methods for accepting goals
   .patch(
+    "/:id/accept",
+    async ({ params, set }: { params: GoalIdParams; set: Context["set"] }) => {
+      try {
+        const goal = await goalService.acceptGoal(params.id);
+        if (!goal) {
+          set.status = 404;
+          return { success: false, message: "Goal not found" };
+        }
+        return { success: true, goal };
+      } catch (error: unknown) {
+        set.status = 400;
+        return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
+    acceptGoalSchema
+  )
+  
+  // Add POST handler for accepting goals (to support form submissions)
+  .post(
     "/:id/accept",
     async ({ params, set }: { params: GoalIdParams; set: Context["set"] }) => {
       try {
@@ -210,7 +230,27 @@ export const goalController = new Elysia({ prefix: "/api/goals" })
   )
 
   // Complete a goal
+  // Support both PATCH and POST methods for completing goals
   .patch(
+    "/:id/complete",
+    async ({ params, set }: { params: GoalIdParams; set: Context["set"] }) => {
+      try {
+        const goal = await goalService.completeGoal(params.id);
+        if (!goal) {
+          set.status = 404;
+          return { success: false, message: "Goal not found" };
+        }
+        return { success: true, goal };
+      } catch (error: unknown) {
+        set.status = 400;
+        return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
+    completeGoalSchema
+  )
+  
+  // Add POST handler for completing goals (to support form submissions)
+  .post(
     "/:id/complete",
     async ({ params, set }: { params: GoalIdParams; set: Context["set"] }) => {
       try {

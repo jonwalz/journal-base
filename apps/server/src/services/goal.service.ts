@@ -181,10 +181,10 @@ export class GoalService {
     // Count goals by status
     const totalGoals = filteredGoals.length;
     const acceptedGoals = filteredGoals.filter(
-      (goal) => goal.acceptedAt && !goal.deletedAt
+      (goal) => goal.acceptedAt
     ).length;
     const completedGoals = filteredGoals.filter(
-      (goal) => goal.completedAt && !goal.deletedAt
+      (goal) => goal.completedAt
     ).length;
 
     // Calculate completion rate
@@ -193,7 +193,7 @@ export class GoalService {
 
     // Calculate average time to completion
     const completedGoalsWithDates = filteredGoals.filter(
-      (goal) => goal.acceptedAt && goal.completedAt && !goal.deletedAt
+      (goal) => goal.acceptedAt && goal.completedAt
     );
 
     const totalCompletionDays = completedGoalsWithDates.reduce(
@@ -242,10 +242,10 @@ export class GoalService {
           (goal) => goal.relatedMetricType === metricType
         );
         const acceptedGoalsOfType = goalsOfType.filter(
-          (goal) => goal.acceptedAt && !goal.deletedAt
+          (goal) => goal.acceptedAt
         ).length;
         const completedGoalsOfType = goalsOfType.filter(
-          (goal) => goal.completedAt && !goal.deletedAt
+          (goal) => goal.completedAt
         ).length;
         const typeCompletionRate =
           acceptedGoalsOfType > 0

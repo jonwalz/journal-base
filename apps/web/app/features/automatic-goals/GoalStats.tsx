@@ -13,30 +13,30 @@ export default function GoalStats({ goals }: GoalStatsProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card className="animate-fade-in">
+      <Card className="animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700">
         <CardContent className="p-4">
-          <p className="text-sm text-black/70 dark:text-white/70">Total Goals</p>
+          <p className="text-sm text-black/70 dark:text-white/90 font-medium">Total Goals</p>
           <p className="text-2xl font-bold text-black dark:text-white">{totalGoals}</p>
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+      <Card className="animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700" style={{ animationDelay: '0.1s' }}>
         <CardContent className="p-4">
-          <p className="text-sm text-black/70 dark:text-white/70">Accepted</p>
+          <p className="text-sm text-black/70 dark:text-white/90 font-medium">Accepted</p>
           <p className="text-2xl font-bold text-black dark:text-white">{acceptedGoals}</p>
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+      <Card className="animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700" style={{ animationDelay: '0.2s' }}>
         <CardContent className="p-4">
-          <p className="text-sm text-black/70 dark:text-white/70">Completed</p>
+          <p className="text-sm text-black/70 dark:text-white/90 font-medium">Completed</p>
           <p className="text-2xl font-bold text-black dark:text-white">{completedGoals}</p>
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+      <Card className="animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700" style={{ animationDelay: '0.3s' }}>
         <CardContent className="p-4">
-          <p className="text-sm text-black/70 dark:text-white/70">Completion Rate</p>
+          <p className="text-sm text-black/70 dark:text-white/90 font-medium">Completion Rate</p>
           <p className="text-2xl font-bold text-black dark:text-white">{completionRate}%</p>
         </CardContent>
       </Card>

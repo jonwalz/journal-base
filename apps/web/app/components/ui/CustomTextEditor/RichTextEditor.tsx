@@ -8,6 +8,8 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import {
   $getRoot,
   $isTextNode,
+  $createParagraphNode,
+  $createTextNode,
   DOMConversionMap,
   DOMExportOutput,
   DOMExportOutputMap,
@@ -19,6 +21,7 @@ import {
   ParagraphNode,
   TextNode,
 } from "lexical";
+import { useCallback, useRef } from "react";
 
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
@@ -122,6 +125,28 @@ const constructImportMap = (): DOMConversionMap => {
   return importMap;
 };
 
+function useEditorState(initialContent?: string) {
+  const editorRef = useRef<LexicalEditor | null>(null);
+
+  const initializeEditor = useCallback((editor: LexicalEditor) => {
+    if (!editorRef.current) {
+      editorRef.current = editor;
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        if (initialContent) {
+          const paragraph = $createParagraphNode();
+          const text = $createTextNode(initialContent);
+          paragraph.append(text);
+          root.append(paragraph);
+        }
+      });
+    }
+  }, [initialContent]);
+
+  return { editor: editorRef.current, initializeEditor };
+}
+
 export function Editor({
   onChange,
   initialContent,
@@ -129,13 +154,20 @@ export function Editor({
   onChange?: (content: string) => void;
   initialContent?: string;
 }) {
-  const handleEditorChange = (editorState: EditorState) => {
+  const editorRef = useRef<LexicalEditor | null>(null);
+  const { initializeEditor } = useEditorState(initialContent);
+  
+  const handleEditorChange = useCallback((editorState: EditorState, editor: LexicalEditor) => {
+    if (!editorRef.current) {
+      initializeEditor(editor);
+      editorRef.current = editor;
+    }
     editorState.read(() => {
       const root = $getRoot();
       const html = root.getTextContent();
       onChange?.(html);
     });
-  };
+  }, [initializeEditor, onChange]);
 
   const editorConfig = {
     html: {
@@ -158,6 +190,8 @@ export function Editor({
         }
       : undefined,
   };
+
+
 
   return (
     <LexicalComposer initialConfig={editorConfig}>

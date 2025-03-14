@@ -4,10 +4,9 @@ import './goal-animations.css';
 
 interface GoalListProps {
   goals: Goal[];
-  onGoalUpdate: (goal: Goal) => void;
 }
 
-export default function GoalList({ goals, onGoalUpdate }: GoalListProps) {
+export default function GoalList({ goals }: GoalListProps) {
   if (goals.length === 0) {
     return (
       <div className="text-center py-8 bg-gray-50 rounded-lg animate-fade-in">
@@ -22,7 +21,6 @@ export default function GoalList({ goals, onGoalUpdate }: GoalListProps) {
         <div key={goal.id} className="goal-list-item">
           <GoalCard 
             goal={goal} 
-            onUpdate={onGoalUpdate} 
           />
         </div>
       ))}
