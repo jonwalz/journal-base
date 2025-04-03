@@ -64,26 +64,24 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     journals.length === 0 ? true : false
   );
 
-  // Update URL and trigger navigation when active journal changes
+  // Update cookie and navigate when journal is explicitly changed
   useEffect(() => {
     if (!activeJournal || activeJournal.id === lastJournalIdRef.current) return;
-    lastJournalIdRef.current = activeJournal.id;
-
-    // Only update URL if we're on a page that needs the journal ID
-    if (location.pathname === "/journals/history") {
-      const newParams = new URLSearchParams(location.search);
-      newParams.set("journalId", activeJournal.id);
-      navigate(`${location.pathname}?${newParams.toString()}`, {
-        replace: true,
-      });
-    }
-
+    
     // Always update the cookie when journal changes using fetcher
     const formData = new FormData();
     formData.set("journalId", activeJournal.id);
     formData.set("_action", "setJournal");
     fetcher.submit(formData, { method: "post", action: "/set-journal" });
-  }, [activeJournal, location.pathname, navigate, fetcher]);
+
+    // Only navigate to today's entry if this is an explicit journal change
+    // (not an initial load or route change)
+    if (lastJournalIdRef.current !== null) {
+      navigate("/todays-entry");
+    }
+    
+    lastJournalIdRef.current = activeJournal.id;
+  }, [activeJournal, navigate, fetcher]);
 
   return (
     <>
@@ -121,7 +119,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 ))}
               </SidebarMenu>
             </SidebarGroup>
-
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>
