@@ -141,6 +141,14 @@ const TherapeuticJournalEntry = () => {
   const { selectedJournalId } = useOutletContext<ContextType>();
   const { entries } = useLoaderData<LoaderData>();
 
+  // Sort entries by createdAt date, most recent first
+  const sortedEntries = [...entries].sort((a, b) => {
+    // Assuming createdAt is a string or Date object that can be parsed by new Date()
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime(); // Descending order for most recent first
+  });
+
   // Use optimistic UI pattern with useFetcher for better UX
   const fetcher = useFetcher<{ data: ActionData }>();
   const isSubmitting = fetcher.state === "submitting";
@@ -294,12 +302,13 @@ const TherapeuticJournalEntry = () => {
               Recent Entries
             </h2>
             <div className="text-sm bg-main-100 dark:bg-main-900/70 text-black dark:text-white px-2 py-1 rounded-base font-medium border-2 border-border dark:border-main-600">
-              {entries.length} {entries.length === 1 ? "entry" : "entries"}
+              {sortedEntries.length}{" "}
+              {sortedEntries.length === 1 ? "entry" : "entries"}
             </div>
           </div>
 
           <div className="overflow-y-auto max-h-[calc(100vh-12rem)] pr-2">
-            {entries.length === 0 ? (
+            {sortedEntries.length === 0 ? (
               <div className="text-center py-8 text-black/70 dark:text-white/70">
                 <div className="mb-2">No entries yet</div>
                 <div className="text-sm">
@@ -307,7 +316,7 @@ const TherapeuticJournalEntry = () => {
                 </div>
               </div>
             ) : (
-              entries.map((entry: JournalEntry) => {
+              sortedEntries.map((entry: JournalEntry) => {
                 // Format date - get relative time (today, yesterday) or actual date
                 const entryDate = new Date(entry.createdAt);
                 const today = new Date();
