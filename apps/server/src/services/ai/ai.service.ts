@@ -338,7 +338,10 @@ export class AIService {
         indicators = JSON.parse(response.message) as GrowthIndicator[];
       } catch (parseError) {
         logger.error("Failed to parse AI response as JSON:", {
-          error: parseError instanceof Error ? parseError.message : String(parseError),
+          error:
+            parseError instanceof Error
+              ? parseError.message
+              : String(parseError),
           response: response.message,
         });
       }
@@ -383,11 +386,13 @@ Content: ${entry.content}`
     }
   }
 
-  async generateGoalSuggestions(content: string): Promise<Array<{
-    content: string;
-    targetDate?: string;
-    metricType?: string;
-  }>> {
+  async generateGoalSuggestions(content: string): Promise<
+    Array<{
+      content: string;
+      targetDate?: string;
+      metricType?: string;
+    }>
+  > {
     try {
       // Prepare the prompt for the AI service with clearer instructions
       const prompt = `
@@ -416,29 +421,29 @@ Content: ${entry.content}`
 
       // Call the AI service to generate goal suggestions
       const aiResponse = await this.generateText(prompt);
-      
+
       // Extract JSON from the response by looking for array brackets
       let jsonStr = aiResponse.message;
-      
+
       // Try to find JSON array in the response if it's not already valid JSON
-      if (jsonStr.trim()[0] !== '[') {
+      if (jsonStr.trim()[0] !== "[") {
         // Look for the first opening bracket of an array
-        const startIdx = jsonStr.indexOf('[');
+        const startIdx = jsonStr.indexOf("[");
         if (startIdx !== -1) {
           // Find the matching closing bracket
           let openBrackets = 0;
           let endIdx = -1;
-          
+
           for (let i = startIdx; i < jsonStr.length; i++) {
-            if (jsonStr[i] === '[') openBrackets++;
-            if (jsonStr[i] === ']') openBrackets--;
-            
-            if (openBrackets === 0 && jsonStr[i] === ']') {
+            if (jsonStr[i] === "[") openBrackets++;
+            if (jsonStr[i] === "]") openBrackets--;
+
+            if (openBrackets === 0 && jsonStr[i] === "]") {
               endIdx = i + 1;
               break;
             }
           }
-          
+
           if (endIdx !== -1) {
             jsonStr = jsonStr.substring(startIdx, endIdx);
           }
@@ -449,15 +454,16 @@ Content: ${entry.content}`
       let suggestions;
       try {
         suggestions = JSON.parse(jsonStr);
-        
+
         // Validate that we have an array of objects with required properties
         if (!Array.isArray(suggestions)) {
-          throw new Error('Response is not an array');
+          throw new Error("Response is not an array");
         }
-        
+
         // Ensure each suggestion has at least the content property
-        suggestions = suggestions.filter(suggestion => suggestion && typeof suggestion.content === 'string');
-        
+        suggestions = suggestions.filter(
+          (suggestion) => suggestion && typeof suggestion.content === "string"
+        );
       } catch (error) {
         logger.error("Failed to parse AI response as JSON:", {
           error: error instanceof Error ? error.message : String(error),
