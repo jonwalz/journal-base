@@ -10,7 +10,6 @@ import {
   $isTextNode,
   $createParagraphNode,
   $createTextNode,
-  $isElementNode,
   DOMConversionMap,
   DOMExportOutput,
   DOMExportOutputMap,
@@ -22,13 +21,94 @@ import {
   ParagraphNode,
   TextNode,
 } from "lexical";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import { parseAllowedColor, parseAllowedFontSize } from "./styleConfig";
 
 const placeholder = "Enter your thoughts...";
+
+// Plugin to handle initial content loading and updates
+function UpdatePlugin({
+  initialContent,
+  onChange,
+}: {
+  initialContent?: string;
+  onChange?: (content: string) => void;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const initialContentRef = useRef(initialContent);
+  const isFirstRender = useRef(true);
+  const [isClient, setIsClient] = useState(false);
+
+  // Combined effect for setting client state and handling content updates
+  useEffect(() => {
+    // This runs both on initial mount and when dependencies change
+    if (!isClient) {
+      setIsClient(true); // Set client flag on first run in browser
+      return; // Exit early, content logic will run on next render cycle when isClient is true
+    }
+
+    // Guard against running if editor isn't ready or no content defined
+    if (!editor || initialContent === undefined) {
+      return;
+    }
+
+    // --- Initial Content Load Logic --- (Runs only once when isClient becomes true)
+    if (isFirstRender.current) {
+      isFirstRender.current = false; // Mark initial load as done
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        if (initialContent === "") {
+          root.append($createParagraphNode());
+        } else {
+          const paragraph = $createParagraphNode();
+          const text = $createTextNode(initialContent);
+          paragraph.append(text);
+          root.append(paragraph);
+        }
+      });
+    }
+    // --- Subsequent Content Update Logic --- (Runs if content prop changes after initial load)
+    else if (initialContent !== initialContentRef.current) { // Compare with ref to detect actual prop change
+      initialContentRef.current = initialContent; // Update ref
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        if (initialContent === "") {
+          root.append($createParagraphNode());
+        } else {
+          const paragraph = $createParagraphNode();
+          const text = $createTextNode(initialContent);
+          paragraph.append(text);
+          root.append(paragraph);
+        }
+      });
+    }
+    // If isClient is true, but it's not the first render AND content hasn't changed, do nothing.
+
+  }, [editor, initialContent, isClient]); // Depend on editor, content, and client status
+
+  // The OnChangePlugin requires a callback with the specific Lexical signature.
+  // We create an inner callback that extracts the text and calls the simplified `onChange` prop.
+  const handleLexicalOnChange = useCallback(
+    (editorState: EditorState /*, _editor: LexicalEditor, _tags: Set<string> */) => {
+      editorState.read(() => {
+        const root = $getRoot();
+        const textContent = root.getTextContent();
+        if (onChange) {
+          onChange(textContent); // Call the passed string-based onChange prop (check if defined)
+        }
+      });
+    },
+    [onChange] // Depend on the passed onChange prop
+  );
+
+  return <OnChangePlugin onChange={handleLexicalOnChange} />;
+}
 
 const removeStylesExportDOM = (
   editor: LexicalEditor,
@@ -126,84 +206,39 @@ const constructImportMap = (): DOMConversionMap => {
   return importMap;
 };
 
-export function Editor({
-  onChange,
-  initialContent,
-}: {
-  onChange?: (content: string) => void;
-  initialContent?: string;
-}) {
-  const editorRef = useRef<LexicalEditor | null>(null);
+interface EditorProps {
+  onChange: (content: string) => void;
+  initialContent?: string; // Make initialContent optional
+}
 
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (editor && initialContent === "") {
-      let isAlreadyEmpty = false;
-      editor.getEditorState().read(() => {
-        const root = $getRoot();
-        const firstChild = root.getFirstChild();
-        // Check if root is empty OR contains only one child that is an ElementNode and is empty
-        isAlreadyEmpty =
-          root.isEmpty() ||
-          (root.getChildrenSize() === 1 &&
-            $isElementNode(firstChild) &&
-            firstChild.isEmpty());
-      });
-
-      if (!isAlreadyEmpty) {
-        editor.update(() => {
-          const root = $getRoot();
-          root.clear();
-          root.append($createParagraphNode());
-        });
-      }
-    }
-  }, [initialContent]);
-
-  const handleOnChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
-      if (!editorRef.current) {
-        editorRef.current = editor;
-      }
-      editorState.read(() => {
-        const root = $getRoot();
-        const textContent = root.getTextContent();
-        onChange?.(textContent);
-      });
-    },
-    [onChange]
-  );
-
-  const editorConfig = {
+export function Editor({ onChange, initialContent }: EditorProps) {
+  const initialConfig = {
+    namespace: "MyEditor",
     html: {
       export: exportMap,
       import: constructImportMap(),
     },
-    namespace: "React.js Demo",
     nodes: [ParagraphNode, TextNode],
     onError(error: Error) {
       throw error;
     },
     theme: ExampleTheme,
-    editorState: initialContent
-      ? () => {
-          const root = $getRoot();
-          root.clear();
-          const paragraph = $createParagraphNode();
-          const text = $createTextNode(initialContent);
-          paragraph.append(text);
-          root.append(paragraph);
-        }
-      : undefined,
   };
 
+  const handleOnChange = useCallback(
+    (content: string) => {
+      onChange?.(content);
+    },
+    [onChange]
+  );
+
   return (
-    <LexicalComposer initialConfig={editorConfig}>
+    <LexicalComposer initialConfig={initialConfig}>
       <div className="relative bg-white dark:bg-secondaryBlack rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <ToolbarPlugin />
         <div className="relative min-h-[150px] bg-white dark:bg-secondaryBlack">
           <RichTextPlugin
-            contentEditable={<ContentEditable className="outline-none p-4" />}
+            contentEditable={<ContentEditable className="editor-input outline-none min-h-[150px] resize-none p-4 caret-neutral-900" />}
             placeholder={
               <div className="absolute top-4 left-4 text-gray-400 pointer-events-none">
                 {placeholder}
@@ -212,8 +247,9 @@ export function Editor({
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
+          <UpdatePlugin onChange={handleOnChange} initialContent={initialContent} /> {/* Pass the handleOnChange wrapper */}
           <AutoFocusPlugin />
-          <OnChangePlugin onChange={handleOnChange} />
+          {/* The UpdatePlugin internally uses OnChangePlugin, no need for a duplicate here */}
         </div>
       </div>
     </LexicalComposer>

@@ -77,7 +77,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     // Only navigate to today's entry if this is an explicit journal change
     // (not an initial load or route change)
     if (lastJournalIdRef.current !== null) {
-      navigate("/todays-entry");
+      navigate("/journal");
     }
     
     lastJournalIdRef.current = activeJournal.id;

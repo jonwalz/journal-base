@@ -48,6 +48,14 @@ export class ApiClient {
       throw new ApiError(response.status, 'API_ERROR', errorData.message || 'An error occurred');
     }
 
+    // Handle 204 No Content specifically - return null data
+    if (response.status === 204) {
+      return {
+        data: null as T, // Explicitly cast null to T for type safety
+        headers: Object.fromEntries(response.headers.entries()),
+      };
+    }
+
     const responseData = await response.json();
     return {
       data: responseData,

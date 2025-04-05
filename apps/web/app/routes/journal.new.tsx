@@ -141,6 +141,8 @@ const TherapeuticJournalEntry = () => {
   const { selectedJournalId } = useOutletContext<ContextType>();
   const { entries } = useLoaderData<LoaderData>();
 
+  console.log("RENDERED");
+
   const fetcher = useFetcher<{ data: ActionData }>();
   const isSubmitting = fetcher.state === "submitting";
 
