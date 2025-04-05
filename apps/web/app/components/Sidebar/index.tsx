@@ -67,7 +67,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   // Update cookie and navigate when journal is explicitly changed
   useEffect(() => {
     if (!activeJournal || activeJournal.id === lastJournalIdRef.current) return;
-    
+
     // Always update the cookie when journal changes using fetcher
     const formData = new FormData();
     formData.set("journalId", activeJournal.id);
@@ -77,9 +77,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     // Only navigate to today's entry if this is an explicit journal change
     // (not an initial load or route change)
     if (lastJournalIdRef.current !== null) {
-      navigate("/todays-entry");
+      navigate("/journal/new");
     }
-    
+
     lastJournalIdRef.current = activeJournal.id;
   }, [activeJournal, navigate, fetcher]);
 

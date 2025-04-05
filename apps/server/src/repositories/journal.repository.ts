@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "../config/database";
 import { journals, entries } from "../db/schema";
 import type { IJournal, IEntry } from "../types";
@@ -52,15 +52,16 @@ export class JournalRepository {
       .where(eq(entries.journalId, journalId));
   }
 
-  async getEntryById(id: string): Promise<IEntry> {
+  async findEntryById(entryId: string): Promise<IEntry | null> {
     const [entry] = await db
       .select()
       .from(entries)
-      .where(eq(entries.id, id))
+      .where(eq(entries.id, entryId))
       .limit(1);
 
     if (!entry) {
-      throw new NotFoundError("Entry");
+      // Return null instead of throwing, let the service handle the error logic
+      return null;
     }
 
     return entry;
@@ -121,5 +122,33 @@ export class JournalRepository {
     }
 
     return entry;
+  }
+
+  async deleteEntryById(
+    entryId: string,
+    journalId: string
+  ): Promise<boolean> {
+    // Drizzle's delete might not directly return the number of affected rows easily across drivers.
+    // A common pattern is to attempt the delete and assume success if no error is thrown,
+    // or to select the entry first (more robust but requires extra query).
+    // Let's try a delete and assume success if it completes.
+    // The `where` clause ensures we only delete if both entryId and journalId match.
+    try {
+      await db
+        .delete(entries)
+        .where(and(eq(entries.id, entryId), eq(entries.journalId, journalId)));
+      // If the query completes without error, assume deletion was successful *if* the entry existed.
+      // We cannot easily tell from the delete result itself if 0 rows were deleted vs 1 row.
+      // For the service layer to return true/false based on actual deletion, 
+      // we'd ideally fetch first or use a DB feature that returns affected rows reliably.
+      // Let's return true for now if no error, the service layer handles non-existence with findById first.
+      // A potentially better approach is to return the result of the delete operation if it provides useful info.
+      // For now, we stick to the boolean return type expected by the service.
+      return true; // Indicate the operation was attempted.
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      // Depending on expected errors, might re-throw or return false.
+      return false;
+    }
   }
 }

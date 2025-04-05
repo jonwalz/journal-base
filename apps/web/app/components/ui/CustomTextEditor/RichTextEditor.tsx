@@ -1,4 +1,3 @@
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
@@ -7,213 +6,124 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import {
   $getRoot,
-  $isTextNode,
   $createParagraphNode,
   $createTextNode,
-  $isElementNode,
-  DOMConversionMap,
-  DOMExportOutput,
-  DOMExportOutputMap,
   EditorState,
-  isHTMLElement,
-  Klass,
-  LexicalEditor,
-  LexicalNode,
   ParagraphNode,
   TextNode,
 } from "lexical";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListNode, ListItemNode } from "@lexical/list";
+import { LinkNode } from "@lexical/link";
+import { CodeNode } from "@lexical/code";
+import { AutoLinkNode } from "@lexical/link";
 
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
-import { parseAllowedColor, parseAllowedFontSize } from "./styleConfig";
 
-const placeholder = "Enter your thoughts...";
+// --- New Plugin Component ---
+// This plugin handles setting the editor's content based on the initialContent prop.
+function InitialContentPlugin({ initialContent }: { initialContent: string }) {
+  // Get the editor instance from the context.
+  const [editor] = useLexicalComposerContext();
 
-const removeStylesExportDOM = (
-  editor: LexicalEditor,
-  target: LexicalNode
-): DOMExportOutput => {
-  const output = target.exportDOM(editor);
-  if (output && isHTMLElement(output.element)) {
-    // Remove all inline styles and classes if the element is an HTMLElement
-    // Children are checked as well since TextNode can be nested
-    // in i, b, and strong tags.
-    for (const el of [
-      output.element,
-      ...output.element.querySelectorAll('[style],[class],[dir="ltr"]'),
-    ]) {
-      el.removeAttribute("class");
-      el.removeAttribute("style");
-      if (el.getAttribute("dir") === "ltr") {
-        el.removeAttribute("dir");
-      }
+  // Use useEffect to update the editor state when initialContent changes.
+  useEffect(() => {
+    // Read the current editor state to get the current text
+    const currentText = editor.getEditorState().read(() => $getRoot().getTextContent());
+
+    // ONLY update the editor if the initialContent prop differs from the current text.
+    // This prevents resetting the editor due to its own onChange -> setState -> prop update loop.
+    if (initialContent !== currentText) {
+      editor.update(() => {
+        const root = $getRoot();
+        // Clear existing content
+        root.clear();
+        // Create a new paragraph and set its text content.
+        // If initialContent is empty, it creates an empty paragraph.
+        const paragraphNode = $createParagraphNode();
+        const textNode = $createTextNode(initialContent || "");
+        paragraphNode.append(textNode);
+        root.append(paragraphNode);
+      });
     }
-  }
-  return output;
-};
+  }, [editor, initialContent]); // Dependencies: run when editor instance or initialContent prop changes.
 
-const exportMap: DOMExportOutputMap = new Map<
-  Klass<LexicalNode>,
-  (editor: LexicalEditor, target: LexicalNode) => DOMExportOutput
->([
-  [ParagraphNode, removeStylesExportDOM],
-  [TextNode, removeStylesExportDOM],
-]);
+  return null; // This plugin component doesn't render any visible UI
+}
+// --- End New Plugin Component ---
 
-const getExtraStyles = (element: HTMLElement): string => {
-  // Parse styles from pasted input, but only if they match exactly the
-  // sort of styles that would be produced by exportDOM
-  let extraStyles = "";
-  const fontSize = parseAllowedFontSize(element.style.fontSize);
-  const backgroundColor = parseAllowedColor(element.style.backgroundColor);
-  const color = parseAllowedColor(element.style.color);
-  if (fontSize !== "" && fontSize !== "15px") {
-    extraStyles += `font-size: ${fontSize};`;
-  }
-  if (backgroundColor !== "" && backgroundColor !== "rgb(255, 255, 255)") {
-    extraStyles += `background-color: ${backgroundColor};`;
-  }
-  if (color !== "" && color !== "rgb(0, 0, 0)") {
-    extraStyles += `color: ${color};`;
-  }
-  return extraStyles;
-};
+// Helper function for placeholder (can be kept or removed if not customized)
+function Placeholder() {
+  return <div className="editor-placeholder">Enter your thoughts...</div>;
+}
 
-const constructImportMap = (): DOMConversionMap => {
-  const importMap: DOMConversionMap = {};
-
-  // Wrap all TextNode importers with a function that also imports
-  // the custom styles implemented by the playground
-  for (const [tag, fn] of Object.entries(TextNode.importDOM() || {})) {
-    importMap[tag] = (importNode) => {
-      const importer = fn(importNode);
-      if (!importer) {
-        return null;
-      }
-      return {
-        ...importer,
-        conversion: (element) => {
-          const output = importer.conversion(element);
-          if (
-            output === null ||
-            output.forChild === undefined ||
-            output.after !== undefined ||
-            output.node !== null
-          ) {
-            return output;
-          }
-          const extraStyles = getExtraStyles(element);
-          if (extraStyles) {
-            const { forChild } = output;
-            return {
-              ...output,
-              forChild: (child, parent) => {
-                const textNode = forChild(child, parent);
-                if ($isTextNode(textNode)) {
-                  textNode.setStyle(textNode.getStyle() + extraStyles);
-                }
-                return textNode;
-              },
-            };
-          }
-          return output;
-        },
-      };
-    };
-  }
-
-  return importMap;
-};
-
-export function Editor({
+export default function Editor({
   onChange,
   initialContent,
 }: {
-  onChange?: (content: string) => void;
-  initialContent?: string;
-}) {
-  const editorRef = useRef<LexicalEditor | null>(null);
-
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (editor && initialContent === "") {
-      let isAlreadyEmpty = false;
-      editor.getEditorState().read(() => {
-        const root = $getRoot();
-        const firstChild = root.getFirstChild();
-        // Check if root is empty OR contains only one child that is an ElementNode and is empty
-        isAlreadyEmpty =
-          root.isEmpty() ||
-          (root.getChildrenSize() === 1 &&
-            $isElementNode(firstChild) &&
-            firstChild.isEmpty());
-      });
-
-      if (!isAlreadyEmpty) {
-        editor.update(() => {
-          const root = $getRoot();
-          root.clear();
-          root.append($createParagraphNode());
-        });
-      }
-    }
-  }, [initialContent]);
-
-  const handleOnChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
-      if (!editorRef.current) {
-        editorRef.current = editor;
-      }
+  onChange: (content: string) => void;
+  initialContent: string;
+}): JSX.Element {
+  // Callback for handling editor changes and notifying the parent component.
+  const handleEditorChange = useCallback(
+    (editorState: EditorState) => {
       editorState.read(() => {
+        // Simplistic text extraction; might need refinement for complex content
         const root = $getRoot();
-        const textContent = root.getTextContent();
-        onChange?.(textContent);
+        const text = root.getTextContent();
+        console.log("Extracted text:", text); // Log the extracted text
+        onChange(text);
       });
     },
     [onChange]
   );
 
-  const editorConfig = {
-    html: {
-      export: exportMap,
-      import: constructImportMap(),
+  // Initial configuration for the Lexical editor.
+  const initialConfig = {
+    namespace: "ControlledEditor",
+    onError: (error: Error) => {
+      console.error(error); // Log errors
     },
-    namespace: "React.js Demo",
-    nodes: [ParagraphNode, TextNode],
-    onError(error: Error) {
-      throw error;
-    },
-    theme: ExampleTheme,
-    editorState: initialContent
-      ? () => {
-          const root = $getRoot();
-          root.clear();
-          const paragraph = $createParagraphNode();
-          const text = $createTextNode(initialContent);
-          paragraph.append(text);
-          root.append(paragraph);
-        }
-      : undefined,
+    nodes: [ // Re-enabled all nodes
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      QuoteNode,
+      LinkNode,
+      CodeNode,
+      AutoLinkNode,
+      ParagraphNode,
+      TextNode,
+    ],
+    theme: ExampleTheme, // Apply custom theme
+    editorState: null, // Set initial state to null; the InitialContentPlugin will populate it.
   };
 
+  console.log("Rendering Editor, initialContent:", initialContent);
+
+  // Main component structure using LexicalComposer and plugins.
   return (
-    <LexicalComposer initialConfig={editorConfig}>
+    <LexicalComposer initialConfig={initialConfig}>
       <div className="relative bg-white dark:bg-secondaryBlack rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <ToolbarPlugin />
+        <ToolbarPlugin /> {/* Renders the toolbar */}
         <div className="relative min-h-[150px] bg-white dark:bg-secondaryBlack">
           <RichTextPlugin
-            contentEditable={<ContentEditable className="outline-none p-4" />}
-            placeholder={
-              <div className="absolute top-4 left-4 text-gray-400 pointer-events-none">
-                {placeholder}
-              </div>
+            contentEditable={
+              <ContentEditable className="min-h-[150px] resize-none text-[15px] relative tab-[1] outline-none p-[15px_10px] caret-gray-600 dark:caret-white" />
             }
-            ErrorBoundary={LexicalErrorBoundary}
+            placeholder={<Placeholder />} // Placeholder text when editor is empty
+            ErrorBoundary={LexicalErrorBoundary} // Error boundary for Lexical components
           />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <OnChangePlugin onChange={handleOnChange} />
+          <HistoryPlugin /> {/* Enables undo/redo functionality */}
+          <OnChangePlugin onChange={handleEditorChange} />{" "}
+          {/* Listens for content changes */}
+          {/* --- Use the new plugin --- */}
+          <InitialContentPlugin initialContent={initialContent} />{" "}
+          {/* Manages initial/updated content */}
+          {/* --- End use the new plugin --- */}
         </div>
       </div>
     </LexicalComposer>

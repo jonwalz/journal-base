@@ -111,7 +111,7 @@ export const goalController = new Elysia({ prefix: "/api/goals" })
     async ({ body, set }: { body: GenerateGoalsBody; set: Context["set"] }) => {
       try {
         // First, get the journal entry to validate it exists
-        const entry = await journalRepository.getEntryById(body.entryId);
+        const entry = await journalRepository.findEntryById(body.entryId);
         if (!entry) {
           set.status = 404;
           return { success: false, message: `Journal entry with ID ${body.entryId} not found` };

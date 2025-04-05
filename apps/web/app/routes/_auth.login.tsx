@@ -1,6 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useNavigation, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { FormField, FormLabel, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
@@ -56,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
       response.user.id
     );
 
-    return redirect("/dashboard", {
+    return redirect("/journal/new", {
       headers: {
         "Set-Cookie": cookie,
       },
@@ -135,11 +141,7 @@ export default function LoginPage() {
             <FormMessage>{actionData.errors._form}</FormMessage>
           )}
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
         </Form>

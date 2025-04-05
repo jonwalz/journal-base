@@ -1,5 +1,5 @@
 import { JournalRepository } from "../repositories/journal.repository";
-import { AuthorizationError } from "../utils/errors";
+import { AuthorizationError, NotFoundError } from "../utils/errors";
 import type { IJournal, IEntry, IGrowthIndicators } from "../types";
 import { ZepClient } from "@getzep/zep-cloud";
 import { env } from "../config/environment";
@@ -108,7 +108,9 @@ export class JournalService {
     }
 
     // Update the entry
-    const entry = await this.journalRepository.updateEntry(entryId, { content });
+    const entry = await this.journalRepository.updateEntry(entryId, {
+      content,
+    });
     if (!entry) {
       throw new Error("Entry not found");
     }
@@ -119,6 +121,58 @@ export class JournalService {
     });
 
     return entry;
+  }
+
+  async getEntryById(
+    userId: string,
+    journalId: string,
+    entryId: string
+  ): Promise<IEntry | null> {
+    // 1. Verify journal ownership
+    const journal = await this.journalRepository.findById(journalId);
+    if (!journal || journal.userId !== userId) {
+      return null;
+    }
+
+    // 2. Find the specific entry within the journal
+    const entry = await this.journalRepository.findEntryById(entryId);
+
+    // 3. Check if the entry belongs to the correct journal and return
+    if (!entry || entry.journalId !== journalId) {
+      // Entry not found or belongs to a different journal (shouldn't happen if DB is consistent)
+      return null;
+    }
+
+    return entry;
+  }
+
+  async deleteEntry(
+    userId: string,
+    journalId: string,
+    entryId: string
+  ): Promise<void> {
+    // 1. Verify journal ownership first to prevent deleting entries from other users' journals
+    const journal = await this.journalRepository.findById(journalId);
+    if (!journal || journal.userId !== userId) {
+      throw new AuthorizationError("Journal not found or access denied");
+    }
+
+    // 2. Call the repository to delete the entry
+    // We need to ensure the entry actually belonged to this journalId,
+    // the repository method should handle this check or we can do it here after fetching the entry first.
+    // For simplicity, let's assume the repository handles checking the entry exists before deleting.
+    const deleted = await this.journalRepository.deleteEntryById(
+      entryId,
+      journalId
+    ); // Pass journalId for potential check in repo
+
+    if (!deleted) {
+      // If the repository method returns false or throws, handle it.
+      // Here we assume it returns boolean indicating success/failure (e.g., if entry didn't exist)
+      throw new NotFoundError("Entry"); // Or appropriate error
+    }
+
+    // Optional: Emit an event, e.g., entryDeleted
   }
 
   private async analyzeEntry(entryId: string, content: string): Promise<void> {

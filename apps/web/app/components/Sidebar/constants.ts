@@ -9,7 +9,7 @@ interface SidebarItem {
 }
 
 export const sidebarOptions: SidebarItem[] = [
-  { name: "Today's Entry", icon: Book, href: "/todays-entry" },
+  { name: "Journal", icon: Book, href: "/journal/new" }, // Updated href
   { name: "Goal Tracking", icon: Target, href: "/goal-tracking" },
   { name: "Growth Chat", icon: MessageCircle, href: "/chat" },
   // { name: "Action Items", icon: ListTodo, href: "/action-items" },

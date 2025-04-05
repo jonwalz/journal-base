@@ -11,7 +11,7 @@ import {
 import "~/features/automatic-goals/goal-animations.css";
 import { Button } from "~/components/ui/button";
 import { MainLayout } from "~/layouts/MainLayout";
-import { Editor } from "~/components/ui/CustomTextEditor/RichTextEditor";
+import Editor from "~/components/ui/CustomTextEditor/RichTextEditor";
 import {
   useOutletContext,
   useLoaderData,
@@ -76,6 +76,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const journalId = formData.get("journalId");
   const content = formData.get("content");
+
+  console.log("Content: ", content);
 
   if (!content || typeof content !== "string" || !content.trim()) {
     return json<ActionData>(
@@ -144,31 +146,21 @@ const TherapeuticJournalEntry = () => {
   const fetcher = useFetcher<{ data: ActionData }>();
   const isSubmitting = fetcher.state === "submitting";
 
-  useEffect(() => {
-    let timer: number | undefined;
-    let animationFrame: number | undefined; // For RAF
-
-    if (fetcher.data && "success" in fetcher.data) {
-      setContent("");
-      // Mount first
+  // Handle success state when entry is saved
+  useEffect((): (() => void) | void => {
+    if (fetcher.state === "idle" && "success" in (fetcher.data || {})) {
+      setShowSuccess(true);
       setIsMounted(true);
+      setContent("");
 
-      // Then trigger animation shortly after
-      // Using requestAnimationFrame ensures it runs in the next paint cycle
-      animationFrame = requestAnimationFrame(() => {
-        setShowSuccess(true);
-      });
-
-      // Set timeout to start fade-out (unchanged)
-      timer = window.setTimeout(() => {
+      // Hide success message after 3 seconds
+      const timer = setTimeout(() => {
         setShowSuccess(false);
-      }, 5000); // Start hiding after 5 seconds
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
-    return () => {
-      if (timer) window.clearTimeout(timer);
-      if (animationFrame) cancelAnimationFrame(animationFrame); // Cleanup RAF
-    };
-  }, [fetcher.data]);
+  }, [fetcher.state, fetcher.data]);
 
   useEffect(() => {
     let unmountTimer: number | undefined;
@@ -276,7 +268,7 @@ const TherapeuticJournalEntry = () => {
               type="submit"
               variant="default"
               className="px-8 py-2 text-base bg-green-600 hover:bg-green-700 text-white font-medium"
-              disabled={isSubmitting || !content.trim()}
+              disabled={isSubmitting || !content?.trim()}
               aria-label="Save journal entry"
               aria-busy={isSubmitting}
             >

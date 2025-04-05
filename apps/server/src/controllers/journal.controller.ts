@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { JournalService } from "../services/journal.service";
+import { GoalService } from "../services/goal.service";
 import { authMiddleware } from "../middleware/auth";
 import { ValidationError, AppError } from "../utils/errors";
 import { UserInfoService } from "../services/user-info.service";
@@ -57,6 +58,7 @@ export const journalController = new Elysia({ prefix: "/journals" })
       user: { id: string; email: string };
     }) => {
       const journalService = new JournalService();
+      const goalService = new GoalService();
 
       const userInfoService = new UserInfoService();
       // TODO: Move to middleware
@@ -73,7 +75,7 @@ export const journalController = new Elysia({ prefix: "/journals" })
         });
       }
 
-      return await journalService.createEntry({
+      const entry = await journalService.createEntry({
         userId: user.id,
         journalId,
         content: body.content,
@@ -81,6 +83,11 @@ export const journalController = new Elysia({ prefix: "/journals" })
         lastName: userInfo.lastName,
         email: user.email,
       });
+
+      // Generate goals after entry creation
+      goalService.generateGoalsFromEntry(entry.id);
+
+      return entry; // Return the created entry
     },
     {
       body: t.Object({
@@ -105,6 +112,27 @@ export const journalController = new Elysia({ prefix: "/journals" })
     }) => {
       const journalService = new JournalService();
       return await journalService.getEntries(user.id, journalId);
+    }
+  )
+  .get(
+    "/:journalId/entries/:entryId",
+    async ({
+      params: { journalId, entryId },
+      user,
+    }: {
+      params: { journalId: string; entryId: string };
+      user: { id: string };
+    }) => {
+      const journalService = new JournalService();
+      const entry = await journalService.getEntryById(
+        user.id,
+        journalId,
+        entryId
+      );
+      if (!entry) {
+        throw new Error("Entry not found");
+      }
+      return entry;
     }
   )
   .put(
@@ -136,5 +164,23 @@ export const journalController = new Elysia({ prefix: "/journals" })
         }
         throw error;
       },
+    }
+  )
+  .delete(
+    "/:journalId/entries/:entryId",
+    async ({
+      params: { journalId, entryId },
+      user,
+      set,
+    }: {
+      params: { journalId: string; entryId: string };
+      user: { id: string };
+      set: any;
+    }) => {
+      const journalService = new JournalService();
+      await journalService.deleteEntry(user.id, journalId, entryId);
+
+      set.status = 204;
+      return;
     }
   );

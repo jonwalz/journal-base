@@ -31,7 +31,14 @@ export class GoalService {
    */
   async generateGoalsFromEntry(entryId: string): Promise<Goal[]> {
     // Get the journal entry
-    const entry = await this.journalRepository.getEntryById(entryId);
+    const entry = await this.journalRepository.findEntryById(entryId);
+    
+    if (!entry) {
+      // Handle the case where the entry is not found
+      // You might want to throw an error, return an empty array, or log a warning
+      console.warn(`Journal entry with ID ${entryId} not found.`);
+      return []; // Example: Return empty array if entry not found
+    }
     
     // Get the journal to access the userId
     const journal = await this.journalRepository.findById(entry.journalId);
