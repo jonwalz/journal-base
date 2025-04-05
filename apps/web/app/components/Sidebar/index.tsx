@@ -104,7 +104,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   <SidebarMenuItem key={items.name}>
                     <SidebarMenuSubButton asChild className="translate-x-0">
                       <Link
-                        className={`rounded-none h-auto block border-b-4 border-border dark:border-darkNavBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main50 dark:hover:bg-main-600 dark:hover:text-white ${
+                        className={`rounded-none h-auto block border-b-4 border-border dark:border-darkNavBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white ${
                           location.pathname === items.href
                             ? "bg-main50 dark:bg-main-700 dark:text-white"
                             : ""
