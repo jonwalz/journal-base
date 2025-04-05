@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -133,39 +133,63 @@ export function ErrorBoundary() {
 }
 
 const TherapeuticJournalEntry = () => {
-  // Removed showPrompt state as it's no longer needed
   const [content, setContent] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const navigate = useNavigate();
   const { selectedJournalId } = useOutletContext<ContextType>();
   const { entries } = useLoaderData<LoaderData>();
 
-  // Sort entries by createdAt date, most recent first
-  const sortedEntries = [...entries].sort((a, b) => {
-    // Assuming createdAt is a string or Date object that can be parsed by new Date()
-    const dateA = new Date(a.createdAt);
-    const dateB = new Date(b.createdAt);
-    return dateB.getTime() - dateA.getTime(); // Descending order for most recent first
-  });
-
-  // Use optimistic UI pattern with useFetcher for better UX
   const fetcher = useFetcher<{ data: ActionData }>();
   const isSubmitting = fetcher.state === "submitting";
 
-  // This enables progressive enhancement - the form will work even without JS
-  const formRef = React.useRef<HTMLFormElement>(null);
-
   useEffect(() => {
+    let timer: number | undefined;
+    let animationFrame: number | undefined; // For RAF
+
     if (fetcher.data && "success" in fetcher.data) {
       setContent("");
-      setShowSuccess(true);
-      // Auto-hide success message after 5 seconds
-      const timer = setTimeout(() => setShowSuccess(false), 5000);
-      return () => clearTimeout(timer);
+      // Mount first
+      setIsMounted(true);
+
+      // Then trigger animation shortly after
+      // Using requestAnimationFrame ensures it runs in the next paint cycle
+      animationFrame = requestAnimationFrame(() => {
+        setShowSuccess(true);
+      });
+
+      // Set timeout to start fade-out (unchanged)
+      timer = window.setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000); // Start hiding after 5 seconds
     }
-    return undefined; // Explicit return for all code paths
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      if (animationFrame) cancelAnimationFrame(animationFrame); // Cleanup RAF
+    };
   }, [fetcher.data]);
+
+  useEffect(() => {
+    let unmountTimer: number | undefined;
+    if (!showSuccess && isMounted) {
+      // If we should hide and it's still mounted, start unmount timer
+      unmountTimer = window.setTimeout(() => {
+        setIsMounted(false);
+      }, 500); // Wait for fade-out animation (500ms)
+    }
+
+    // Cleanup function for the unmount timer
+    return () => {
+      if (unmountTimer) window.clearTimeout(unmountTimer);
+    };
+  }, [showSuccess, isMounted]);
+
+  const sortedEntries = [...entries].sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime();
+  });
 
   return (
     <MainLayout>
@@ -174,11 +198,7 @@ const TherapeuticJournalEntry = () => {
         <p className="text-gray-600 dark:text-gray-400">
           Record your thoughts, feelings, and experiences for today.
         </p>
-        <fetcher.Form
-          method="post"
-          className="flex-1 flex flex-col"
-          ref={formRef}
-        >
+        <fetcher.Form method="post" className="flex-1 flex flex-col">
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
             <div className="animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700 rounded-lg p-4">
               <p className="text-sm text-black/70 dark:text-white/90 font-medium">
@@ -223,11 +243,17 @@ const TherapeuticJournalEntry = () => {
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <Editor onChange={setContent} initialContent={content} />
           </div>
-          {showSuccess && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg mt-4 mb-4 flex items-center gap-3">
+          {isMounted && (
+            <div
+              className={`bg-green-100 dark:bg-green-900/70 border-2 border-green-600 dark:border-green-400 p-4 rounded-base shadow-md mt-4 mb-4 flex items-center gap-3 ${
+                showSuccess
+                  ? "animate-in fade-in"
+                  : "animate-out fade-out duration-500"
+              }`}
+            >
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-green-400"
+                  className="h-5 w-5 text-green-700 dark:text-green-300"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -239,7 +265,7 @@ const TherapeuticJournalEntry = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-green-700">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   Journal entry saved successfully!
                 </p>
               </div>
@@ -317,7 +343,6 @@ const TherapeuticJournalEntry = () => {
               </div>
             ) : (
               sortedEntries.map((entry: JournalEntry) => {
-                // Format date - get relative time (today, yesterday) or actual date
                 const entryDate = new Date(entry.createdAt);
                 const today = new Date();
                 const yesterday = new Date(today);
@@ -338,7 +363,6 @@ const TherapeuticJournalEntry = () => {
                   });
                 }
 
-                // Get clean preview text (no HTML)
                 const previewText = entry.content.replace(/<[^>]*>/g, "");
 
                 return (

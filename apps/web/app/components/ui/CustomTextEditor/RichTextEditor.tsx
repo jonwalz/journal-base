@@ -10,6 +10,7 @@ import {
   $isTextNode,
   $createParagraphNode,
   $createTextNode,
+  $isElementNode,
   DOMConversionMap,
   DOMExportOutput,
   DOMExportOutputMap,
@@ -21,7 +22,7 @@ import {
   ParagraphNode,
   TextNode,
 } from "lexical";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
@@ -125,28 +126,6 @@ const constructImportMap = (): DOMConversionMap => {
   return importMap;
 };
 
-function useEditorState(initialContent?: string) {
-  const editorRef = useRef<LexicalEditor | null>(null);
-
-  const initializeEditor = useCallback((editor: LexicalEditor) => {
-    if (!editorRef.current) {
-      editorRef.current = editor;
-      editor.update(() => {
-        const root = $getRoot();
-        root.clear();
-        if (initialContent) {
-          const paragraph = $createParagraphNode();
-          const text = $createTextNode(initialContent);
-          paragraph.append(text);
-          root.append(paragraph);
-        }
-      });
-    }
-  }, [initialContent]);
-
-  return { editor: editorRef.current, initializeEditor };
-}
-
 export function Editor({
   onChange,
   initialContent,
@@ -155,19 +134,45 @@ export function Editor({
   initialContent?: string;
 }) {
   const editorRef = useRef<LexicalEditor | null>(null);
-  const { initializeEditor } = useEditorState(initialContent);
-  
-  const handleEditorChange = useCallback((editorState: EditorState, editor: LexicalEditor) => {
-    if (!editorRef.current) {
-      initializeEditor(editor);
-      editorRef.current = editor;
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (editor && initialContent === "") {
+      let isAlreadyEmpty = false;
+      editor.getEditorState().read(() => {
+        const root = $getRoot();
+        const firstChild = root.getFirstChild();
+        // Check if root is empty OR contains only one child that is an ElementNode and is empty
+        isAlreadyEmpty =
+          root.isEmpty() ||
+          (root.getChildrenSize() === 1 &&
+            $isElementNode(firstChild) &&
+            firstChild.isEmpty());
+      });
+
+      if (!isAlreadyEmpty) {
+        editor.update(() => {
+          const root = $getRoot();
+          root.clear();
+          root.append($createParagraphNode());
+        });
+      }
     }
-    editorState.read(() => {
-      const root = $getRoot();
-      const html = root.getTextContent();
-      onChange?.(html);
-    });
-  }, [initializeEditor, onChange]);
+  }, [initialContent]);
+
+  const handleOnChange = useCallback(
+    (editorState: EditorState, editor: LexicalEditor) => {
+      if (!editorRef.current) {
+        editorRef.current = editor;
+      }
+      editorState.read(() => {
+        const root = $getRoot();
+        const textContent = root.getTextContent();
+        onChange?.(textContent);
+      });
+    },
+    [onChange]
+  );
 
   const editorConfig = {
     html: {
@@ -183,15 +188,14 @@ export function Editor({
     editorState: initialContent
       ? () => {
           const root = $getRoot();
-          const paragraph = new ParagraphNode();
-          const text = new TextNode(initialContent);
+          root.clear();
+          const paragraph = $createParagraphNode();
+          const text = $createTextNode(initialContent);
           paragraph.append(text);
           root.append(paragraph);
         }
       : undefined,
   };
-
-
 
   return (
     <LexicalComposer initialConfig={editorConfig}>
@@ -199,11 +203,9 @@ export function Editor({
         <ToolbarPlugin />
         <div className="relative min-h-[150px] bg-white dark:bg-secondaryBlack">
           <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="min-h-[150px] resize-none text-[15px] relative tab-[1] outline-none p-[15px_10px] caret-gray-600 dark:caret-white" />
-            }
+            contentEditable={<ContentEditable className="outline-none p-4" />}
             placeholder={
-              <div className="text-gray-400 overflow-hidden absolute truncate top-[15px] left-[10px] text-[15px] select-none pointer-events-none">
+              <div className="absolute top-4 left-4 text-gray-400 pointer-events-none">
                 {placeholder}
               </div>
             }
@@ -211,7 +213,7 @@ export function Editor({
           />
           <HistoryPlugin />
           <AutoFocusPlugin />
-          <OnChangePlugin onChange={handleEditorChange} />
+          <OnChangePlugin onChange={handleOnChange} />
         </div>
       </div>
     </LexicalComposer>

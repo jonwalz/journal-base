@@ -135,15 +135,23 @@ export default function App() {
             position="top-right"
             toastOptions={{
               classNames: {
-                toast: 'bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none rounded-base',
-                title: 'font-bold',
-                description: 'text-sm',
-                actionButton: 'bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none',
-                closeButton: 'bg-transparent hover:bg-transparent text-black dark:text-white'
+                // Apply styles similar to Alert component's default variant
+                toast:
+                  "relative rounded-base shadow-light dark:shadow-dark font-bold border-2 border-border dark:border-darkBorder p-4 bg-main dark:bg-main-700 text-black dark:text-white hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
+                // Apply styles similar to AlertTitle
+                title: "font-bold mb-1 leading-none tracking-tight",
+                // Apply styles similar to AlertDescription
+                description:
+                  "text-sm font-base [&_p]:leading-relaxed",
+                // Keep original action/close button styles for now
+                actionButton:
+                  "bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
+                closeButton:
+                  "bg-transparent hover:bg-transparent text-black dark:text-white",
               },
               style: {
-                padding: '1rem',
-              }
+                padding: "1rem", // Kept padding, adjust if needed based on new classes
+              },
             }}
             // Apply custom styling for all toasts
             className="custom-toaster"
