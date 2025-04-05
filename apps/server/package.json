@@ -13,7 +13,7 @@
     "db:push": "bunx drizzle-kit push:pg",
     "db:studio": "bunx drizzle-kit studio",
     "migrate": "bun run scripts/migrate.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "deploy": "wrangler deploy",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",

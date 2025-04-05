@@ -48,3 +48,7 @@ out/
 
 .turbo
 .aider*
+
+# build
+/apps/web/build
+/apps/server/build

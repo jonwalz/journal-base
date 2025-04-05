@@ -23,7 +23,6 @@ import { AutoLinkNode } from "@lexical/link";
 import ExampleTheme from "./ExampleTheme";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 
-// --- New Plugin Component ---
 // This plugin handles setting the editor's content based on the initialContent prop.
 function InitialContentPlugin({ initialContent }: { initialContent: string }) {
   // Get the editor instance from the context.
@@ -32,7 +31,9 @@ function InitialContentPlugin({ initialContent }: { initialContent: string }) {
   // Use useEffect to update the editor state when initialContent changes.
   useEffect(() => {
     // Read the current editor state to get the current text
-    const currentText = editor.getEditorState().read(() => $getRoot().getTextContent());
+    const currentText = editor
+      .getEditorState()
+      .read(() => $getRoot().getTextContent());
 
     // ONLY update the editor if the initialContent prop differs from the current text.
     // This prevents resetting the editor due to its own onChange -> setState -> prop update loop.
@@ -52,12 +53,6 @@ function InitialContentPlugin({ initialContent }: { initialContent: string }) {
   }, [editor, initialContent]); // Dependencies: run when editor instance or initialContent prop changes.
 
   return null; // This plugin component doesn't render any visible UI
-}
-// --- End New Plugin Component ---
-
-// Helper function for placeholder (can be kept or removed if not customized)
-function Placeholder() {
-  return <div className="editor-placeholder">Enter your thoughts...</div>;
 }
 
 export default function Editor({
@@ -87,7 +82,8 @@ export default function Editor({
     onError: (error: Error) => {
       console.error(error); // Log errors
     },
-    nodes: [ // Re-enabled all nodes
+    nodes: [
+      // Re-enabled all nodes
       HeadingNode,
       ListNode,
       ListItemNode,
@@ -102,8 +98,6 @@ export default function Editor({
     editorState: null, // Set initial state to null; the InitialContentPlugin will populate it.
   };
 
-  console.log("Rendering Editor, initialContent:", initialContent);
-
   // Main component structure using LexicalComposer and plugins.
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -114,7 +108,6 @@ export default function Editor({
             contentEditable={
               <ContentEditable className="min-h-[150px] resize-none text-[15px] relative tab-[1] outline-none p-[15px_10px] caret-gray-600 dark:caret-white" />
             }
-            placeholder={<Placeholder />} // Placeholder text when editor is empty
             ErrorBoundary={LexicalErrorBoundary} // Error boundary for Lexical components
           />
           <HistoryPlugin /> {/* Enables undo/redo functionality */}

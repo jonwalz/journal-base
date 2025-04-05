@@ -1,1 +1,0 @@
-import{j as t}from"./index-CTt_PmtF.js";import{M as i}from"./MainLayout-DZY-cXE8.js";import"./input-CkwIpSKd.js";import"./components-Dq8-UIqM.js";import"./ThemeProvider-BQeXjIYU.js";function e(){return t.jsx(i,{children:t.jsx("div",{className:"container max-w-4xl mx-auto p-6 space-y-6",children:t.jsx("h1",{children:"Action Items"})})})}export{e as default};

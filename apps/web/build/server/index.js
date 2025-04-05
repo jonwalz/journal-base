@@ -1,25 +1,36 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { PassThrough } from "node:stream";
 import { createReadableStreamFromReadable, createCookie, createCookieSessionStorage, redirect, json as json$1 } from "@remix-run/node";
-import { RemixServer, useFetcher, useLoaderData, Meta, Links, Outlet, ScrollRestoration, Scripts, json, redirect as redirect$1, useLocation, useOutletContext, Form as Form$1, Link, useActionData, useNavigation } from "@remix-run/react";
+import { RemixServer, useFetcher, Link, useLocation, useLoaderData, Meta, Links, Outlet, ScrollRestoration, Scripts, json, redirect as redirect$1, useOutletContext, Form as Form$1, useNavigate, useActionData, useNavigation, useSubmit, useSearchParams } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import * as React from "react";
-import { createContext, useState, useEffect, useContext, useRef } from "react";
+import { createContext, useState, useEffect, useContext, useRef, useCallback } from "react";
+import { Toaster, toast } from "sonner";
+import { X, PanelLeft, ChevronRight, Book, Target, MessageCircle, Check, Circle, ChevronsUpDown, Plus, BadgeCheck, CreditCard, Bell, Moon, Sun, LogOut, ArrowLeft, Trash2, Loader2, Save, ChevronDown, Calendar, Clock, History, ChevronLeft } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
-import { X, PanelLeft, ChevronRight, Book, Target, MessageCircle, ListTodo, LineChart, Clock, ClipboardList, Star, Check, Circle, ChevronsUpDown, Plus, BadgeCheck, CreditCard, Bell, Moon, Sun, LogOut, Calendar, Sparkles, ChevronDown, Loader2, Save } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import * as SeparatorPrimitive from "@radix-ui/react-separator";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import * as LabelPrimitive from "@radix-ui/react-label";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { $getSelection, $isRangeSelection, SELECTION_CHANGE_COMMAND, CAN_UNDO_COMMAND, CAN_REDO_COMMAND, UNDO_COMMAND, REDO_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getRoot, $createParagraphNode, $createTextNode, ParagraphNode, TextNode } from "lexical";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListNode, ListItemNode } from "@lexical/list";
+import { LinkNode, AutoLinkNode } from "@lexical/link";
+import { CodeNode } from "@lexical/code";
+import { mergeRegister } from "@lexical/utils";
 import ReactMarkdown from "react-markdown";
 const ABORT_DELAY = 5e3;
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext, loadContext) {
@@ -119,7 +130,7 @@ const entryServer = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
   __proto__: null,
   default: handleRequest
 }, Symbol.toStringTag, { value: "Module" }));
-const styles = "/assets/tailwind-BzsmNioR.css";
+const styles = "/assets/tailwind-DoO9ndVl.css";
 const themeCookie = createCookie("theme", {
   maxAge: 3456e4
   // 400 days
@@ -171,6 +182,105 @@ const ThemeProvider = ({
   return /* @__PURE__ */ jsx(ThemeContext.Provider, { value: { theme, setTheme, toggleTheme }, children });
 };
 const useTheme = () => useContext(ThemeContext);
+function GoalNotification({ newGoalsCount }) {
+  const [isVisible, setIsVisible] = useState(true);
+  if (newGoalsCount === 0 || !isVisible) return null;
+  return /* @__PURE__ */ jsx("div", { className: "fixed bottom-4 right-4 bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-300 rounded-md p-4 max-w-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.5)] animate-slide-in", children: /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start gap-4", children: [
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("h3", { className: "font-semibold text-lg text-black dark:text-white", children: "New Growth Goals Available" }),
+      /* @__PURE__ */ jsxs("p", { className: "text-sm text-neutral-800 dark:text-neutral-200 mt-1", children: [
+        newGoalsCount,
+        " new goal",
+        newGoalsCount > 1 ? "s" : "",
+        " generated based on your journal entries."
+      ] }),
+      /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/goal-tracking",
+          className: "mt-3 inline-block px-3 py-1 bg-blue-500 text-white border-2 border-black dark:border-neutral-300 rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] hover:bg-blue-600 active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all duration-150 text-sm font-medium",
+          children: "View Goals"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs(
+      "button",
+      {
+        onClick: () => setIsVisible(false),
+        className: "text-black dark:text-white flex-shrink-0 p-1 border-2 border-black dark:border-neutral-300 rounded-md bg-neutral-200 dark:bg-neutral-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all duration-150",
+        "aria-label": "Close notification",
+        children: [
+          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" }),
+          /* @__PURE__ */ jsx("svg", { className: "h-4 w-4", viewBox: "0 0 20 20", fill: "currentColor", "aria-hidden": "true", children: /* @__PURE__ */ jsx("path", { fillRule: "evenodd", d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z", clipRule: "evenodd" }) })
+        ]
+      }
+    )
+  ] }) });
+}
+function GoalNotificationProvider({ userInfo }) {
+  const [newGoalsCount, setNewGoalsCount] = useState(0);
+  const location = useLocation();
+  const fetcher = useFetcher();
+  const lastFetchTimeRef = useRef(0);
+  const isMountedRef = useRef(false);
+  const fetchTimeoutRef = useRef(null);
+  const shouldFetchGoals = () => {
+    if (location.pathname === "/goal-tracking") {
+      return false;
+    }
+    if (!(userInfo == null ? void 0 : userInfo.userId)) {
+      return false;
+    }
+    if (fetcher.state !== "idle") {
+      return false;
+    }
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 1e4) {
+      return false;
+    }
+    return true;
+  };
+  const fetchNewGoals = () => {
+    if (shouldFetchGoals()) {
+      lastFetchTimeRef.current = Date.now();
+      fetcher.load(`/api/goals/new-count?userId=${userInfo.userId}&_t=${Date.now()}`);
+    }
+  };
+  useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+      fetchTimeoutRef.current = null;
+    }
+    if (location.pathname === "/goal-tracking") {
+      setNewGoalsCount(0);
+      return;
+    }
+    if (!(userInfo == null ? void 0 : userInfo.userId)) {
+      return;
+    }
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchNewGoals();
+      const intervalId = setInterval(fetchNewGoals, 5 * 60 * 1e3);
+      return () => clearInterval(intervalId);
+    }, 2e3);
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+        fetchTimeoutRef.current = null;
+      }
+    };
+  }, [location.pathname, userInfo == null ? void 0 : userInfo.userId]);
+  useEffect(() => {
+    if (fetcher.data && typeof fetcher.data === "object" && "count" in fetcher.data) {
+      setNewGoalsCount(fetcher.data.count);
+    }
+  }, [fetcher.data]);
+  return /* @__PURE__ */ jsx(GoalNotification, { newGoalsCount });
+}
 class AuthService {
   static async signUp(data) {
     const response = await ApiClient.post("/auth/signup", data);
@@ -218,10 +328,13 @@ const sessionStorage = createCookieSessionStorage({
 async function getSession(request) {
   return sessionStorage.getSession(request.headers.get("Cookie"));
 }
-async function setAuthTokens(request, authToken, sessionToken) {
+async function setAuthTokens(request, authToken, sessionToken, userId) {
   const session = await getSession(request);
   session.set("authToken", authToken);
   session.set("sessionToken", sessionToken);
+  if (userId) {
+    session.set("userId", userId);
+  }
   return sessionStorage.commitSession(session);
 }
 async function getAuthToken(request) {
@@ -239,7 +352,7 @@ async function requireUserSession(request, redirectTo = "/login") {
   if (!authToken || !sessionToken) {
     throw redirect(redirectTo, {
       headers: {
-        "Set-Cookie": await destroySession(request)
+        "Set-Cookie": await sessionStorage.destroySession(session)
       }
     });
   }
@@ -248,93 +361,44 @@ async function requireUserSession(request, redirectTo = "/login") {
       AuthService.verifyAuthToken(authToken),
       AuthService.verifySessionToken(sessionToken)
     ]);
-    return { authToken, sessionToken };
+    const userId = session.get("userId");
+    console.log("Current session userId:", userId);
+    return { authToken, sessionToken, userId };
   } catch (error) {
     throw redirect(redirectTo, {
       headers: {
-        "Set-Cookie": await destroySession(request)
+        "Set-Cookie": await sessionStorage.destroySession(session)
       }
     });
   }
 }
-async function destroySession(request) {
-  const session = await getSession(request);
-  return sessionStorage.destroySession(session);
-}
 async function logout(request) {
+  const session = await getSession(request);
   return redirect("/login", {
     headers: {
-      "Set-Cookie": await destroySession(request)
+      "Set-Cookie": await sessionStorage.destroySession(session)
     }
   });
 }
+class ApiError extends Error {
+  constructor(statusCode, code, message) {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.name = "ApiError";
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
+}
+class AuthenticationError extends ApiError {
+  constructor(message = "Authentication failed") {
+    super(401, "AUTHENTICATION_ERROR", message);
+    this.name = "AuthenticationError";
+    Object.setPrototypeOf(this, AuthenticationError.prototype);
+  }
+}
 const API_BASE_URL = process.env.API_URL || "http://localhost:3030";
+console.log("API_BASE_URL", API_BASE_URL);
 class ApiClient {
-  static connectWebSocket(config2 = {}) {
-    var _a;
-    this.wsConfig = { ...this.wsConfig, ...config2 };
-    if (((_a = this.wsConnection) == null ? void 0 : _a.readyState) === WebSocket.OPEN) {
-      return this.wsConnection;
-    }
-    const wsBaseUrl = API_BASE_URL.replace(/^http/, "ws");
-    const wsUrl = `${wsBaseUrl}/chat`;
-    this.wsConnection = new WebSocket(wsUrl);
-    this.wsConnection.onopen = () => {
-      this.reconnectAttempt = 0;
-      if (this.reconnectTimeout) {
-        clearTimeout(this.reconnectTimeout);
-        this.reconnectTimeout = null;
-      }
-    };
-    this.wsConnection.onmessage = (event) => {
-      var _a2, _b;
-      try {
-        const data = JSON.parse(event.data);
-        (_b = (_a2 = this.wsConfig).onMessage) == null ? void 0 : _b.call(_a2, data);
-      } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
-      }
-    };
-    this.wsConnection.onerror = (error) => {
-      var _a2, _b;
-      console.error("WebSocket error:", error);
-      (_b = (_a2 = this.wsConfig).onError) == null ? void 0 : _b.call(_a2, error);
-    };
-    this.wsConnection.onclose = () => {
-      var _a2, _b;
-      (_b = (_a2 = this.wsConfig).onClose) == null ? void 0 : _b.call(_a2);
-      this.handleReconnection();
-    };
-    return this.wsConnection;
-  }
-  static handleReconnection() {
-    if (this.reconnectAttempt < (this.wsConfig.reconnectAttempts ?? 3) && !this.reconnectTimeout) {
-      this.reconnectTimeout = setTimeout(() => {
-        this.reconnectAttempt++;
-        console.log(`Attempting to reconnect (${this.reconnectAttempt})`);
-        this.connectWebSocket(this.wsConfig);
-        this.reconnectTimeout = null;
-      }, this.wsConfig.reconnectInterval);
-    }
-  }
-  static sendWebSocketMessage(message) {
-    var _a;
-    if (((_a = this.wsConnection) == null ? void 0 : _a.readyState) !== WebSocket.OPEN) {
-      throw new Error("WebSocket is not connected");
-    }
-    this.wsConnection.send(JSON.stringify(message));
-  }
-  static closeWebSocket() {
-    if (this.wsConnection) {
-      this.wsConnection.close();
-      this.wsConnection = null;
-      this.reconnectAttempt = 0;
-      if (this.reconnectTimeout) {
-        clearTimeout(this.reconnectTimeout);
-        this.reconnectTimeout = null;
-      }
-    }
-  }
   static async request(endpoint, options = {}) {
     const { data, headers: customHeaders, ...customOptions } = options;
     const defaultOptions = {
@@ -353,7 +417,18 @@ class ApiClient {
     }
     const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
+      if (response.status === 401) {
+        throw new AuthenticationError("Your session has expired. Please log in again.");
+      }
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new ApiError(response.status, "API_ERROR", errorData.message || "An error occurred");
+    }
+    if (response.status === 204) {
+      return {
+        data: null,
+        // Explicitly cast null to T for type safety
+        headers: Object.fromEntries(response.headers.entries())
+      };
     }
     const responseData = await response.json();
     return {
@@ -380,6 +455,13 @@ class ApiClient {
   }
   static async delete(endpoint, options = {}) {
     await this.request(endpoint, { ...options, method: "DELETE" });
+  }
+  static async patch(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      ...options,
+      method: "PATCH",
+      data
+    });
   }
   static async addAuthHeaders(options = {}, request) {
     const session = await getSession(request);
@@ -422,13 +504,6 @@ class ApiClient {
     return this.request(endpoint, { ...protectedOptions, method: "DELETE" });
   }
 }
-__publicField(ApiClient, "wsConnection", null);
-__publicField(ApiClient, "wsConfig", {
-  reconnectAttempts: 3,
-  reconnectInterval: 3e3
-});
-__publicField(ApiClient, "reconnectAttempt", 0);
-__publicField(ApiClient, "reconnectTimeout", null);
 class JournalServiceError extends Error {
   constructor(message, originalError) {
     super(message);
@@ -491,32 +566,36 @@ class JournalService {
   }
   static async createEntry(journalId, content, options = {}) {
     try {
-      await ApiClient.post(
+      const response = await ApiClient.post(
         `/journals/${journalId}/entries`,
         {
           content
         },
         options
       );
+      return response.data;
     } catch (error) {
-      throw new JournalServiceError(
-        `Failed to create entry for journal ${journalId}`,
-        error
-      );
+      throw new JournalServiceError("Failed to create journal entry", error);
     }
   }
-  static async getEntries(journalId, options = {}) {
+  static async updateEntry(journalId, entryId, content, options = {}) {
     try {
-      const response = await ApiClient.get(
-        `/journals/${journalId}/entries`,
+      const response = await ApiClient.put(
+        `/journals/${journalId}/entries/${entryId}`,
+        { content },
         options
       );
       return response.data;
     } catch (error) {
-      throw new JournalServiceError(
-        `Failed to get entries for journal ${journalId}`,
-        error
-      );
+      throw new JournalServiceError("Failed to update journal entry", error);
+    }
+  }
+  static async getEntries(journalId, options = {}) {
+    try {
+      const response = await ApiClient.get(`/journals/${journalId}/entries`, options);
+      return response.data;
+    } catch (error) {
+      throw new JournalServiceError("Failed to fetch journal entries", error);
     }
   }
 }
@@ -563,6 +642,17 @@ class UserInfoService {
     }
   }
 }
+const journalCookie = createCookie("selected_journal", {
+  maxAge: 604800
+  // one week
+});
+async function getSelectedJournalId(request) {
+  const cookieHeader = request.headers.get("Cookie");
+  return await journalCookie.parse(cookieHeader) || null;
+}
+async function setSelectedJournalId(journalId) {
+  return journalCookie.serialize(journalId);
+}
 const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -576,16 +666,19 @@ const links = () => [
   },
   { rel: "stylesheet", href: styles }
 ];
-const loader$6 = async ({ request }) => {
+const loader$b = async ({ request }) => {
   const theme = await themeCookie.parse(request.headers.get("Cookie"));
   const url = new URL(request.url);
+  const selectedJournalId = await getSelectedJournalId(request);
   if (url.pathname.startsWith("/login") || url.pathname.startsWith("/register")) {
     return json({
       theme: theme || "light",
       journals: [],
+      selectedJournalId: null,
       userInfo: {
         id: "",
         userId: "",
+        email: "",
         firstName: "",
         lastName: "",
         timezone: "",
@@ -612,16 +705,17 @@ const loader$6 = async ({ request }) => {
     return json({
       theme: theme || "light",
       journals: response,
+      selectedJournalId,
       userInfo
     });
   } catch (error) {
     if (error instanceof Response && error.status === 302) {
       throw error;
     }
-    await getSession(request);
+    const session = await getSession(request);
     throw redirect$1("/login", {
       headers: {
-        "Set-Cookie": await destroySession(request)
+        "Set-Cookie": await sessionStorage.destroySession(session)
       }
     });
   }
@@ -636,7 +730,34 @@ function App() {
       /* @__PURE__ */ jsx(Links, {})
     ] }),
     /* @__PURE__ */ jsxs("body", { children: [
-      /* @__PURE__ */ jsx(ThemeProvider, { theme: data.theme, children: /* @__PURE__ */ jsx(Outlet, { context: data }) }),
+      /* @__PURE__ */ jsxs(ThemeProvider, { theme: data.theme, children: [
+        /* @__PURE__ */ jsx(Outlet, { context: data }),
+        /* @__PURE__ */ jsx(GoalNotificationProvider, { userInfo: data.userInfo }),
+        /* @__PURE__ */ jsx(
+          Toaster,
+          {
+            position: "top-right",
+            toastOptions: {
+              classNames: {
+                // Apply styles similar to Alert component's default variant
+                toast: "relative rounded-base shadow-light dark:shadow-dark font-bold border-2 border-border dark:border-darkBorder p-4 bg-main dark:bg-main-700 text-black dark:text-white hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
+                // Apply styles similar to AlertTitle
+                title: "font-bold mb-1 leading-none tracking-tight",
+                // Apply styles similar to AlertDescription
+                description: "text-sm font-base [&_p]:leading-relaxed",
+                // Keep original action/close button styles for now
+                actionButton: "bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
+                closeButton: "bg-transparent hover:bg-transparent text-black dark:text-white"
+              },
+              style: {
+                padding: "1rem"
+                // Kept padding, adjust if needed based on new classes
+              }
+            },
+            className: "custom-toaster"
+          }
+        )
+      ] }),
       /* @__PURE__ */ jsx(ScrollRestoration, {}),
       /* @__PURE__ */ jsx(Scripts, {})
     ] })
@@ -646,22 +767,151 @@ const route0 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   default: App,
   links,
-  loader: loader$6
+  loader: loader$b
 }, Symbol.toStringTag, { value: "Module" }));
-const MOBILE_BREAKPOINT = 768;
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(void 0);
-  useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-  return !!isMobile;
-}
+let GoalServiceError$1 = class GoalServiceError extends Error {
+  constructor(message, originalError) {
+    super(message);
+    this.originalError = originalError;
+    this.name = "GoalServiceError";
+  }
+};
+let GoalService$1 = class GoalService {
+  static async getGoals(filters, options = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters) {
+        if (filters.status && filters.status !== "all") {
+          queryParams.append("status", filters.status);
+        }
+        if (filters.dateRange && filters.dateRange !== "all") {
+          queryParams.append("dateRange", filters.dateRange);
+        }
+        if (filters.metricType && filters.metricType !== "all") {
+          queryParams.append("metricType", filters.metricType);
+        }
+      }
+      const response = await ApiClient.get(`/goals?${queryParams}`, options);
+      return response.data.goals || [];
+    } catch (error) {
+      throw new GoalServiceError$1("Failed to fetch goals", error);
+    }
+  }
+  static async acceptGoal(goalId, options = {}) {
+    try {
+      console.log(`Sending acceptGoal request for goal ID: ${goalId}`);
+      const response = await ApiClient.post(`/api/goals/${goalId}/accept`, {}, options);
+      console.log("Response data:", response.data);
+      if (!response.data.goal) {
+        console.error("Response missing goal data:", response.data);
+        throw new Error("Response missing goal data");
+      }
+      return response.data.goal;
+    } catch (error) {
+      console.error("Error in acceptGoal:", error);
+      throw new GoalServiceError$1(
+        `Failed to accept goal with id ${goalId}`,
+        error
+      );
+    }
+  }
+  static async completeGoal(goalId, options = {}) {
+    try {
+      console.log(`Sending completeGoal request for goal ID: ${goalId}`);
+      const response = await ApiClient.post(`/api/goals/${goalId}/complete`, {}, options);
+      console.log("Response data:", response.data);
+      if (!response.data.goal) {
+        console.error("Response missing goal data:", response.data);
+        throw new Error("Response missing goal data");
+      }
+      return response.data.goal;
+    } catch (error) {
+      console.error("Error in completeGoal:", error);
+      throw new GoalServiceError$1(
+        `Failed to complete goal with id ${goalId}`,
+        error
+      );
+    }
+  }
+  static async deleteGoal(goalId, options = {}) {
+    try {
+      console.log(`Sending deleteGoal request for goal ID: ${goalId}`);
+      await ApiClient.delete(`/api/goals/${goalId}`, options);
+      console.log("Goal deleted successfully");
+    } catch (error) {
+      console.error("Error in deleteGoal:", error);
+      throw new GoalServiceError$1(
+        `Failed to delete goal with id ${goalId}`,
+        error
+      );
+    }
+  }
+  static async getNewGoalsCount(userId, options = {}) {
+    try {
+      if (!userId) {
+        return 0;
+      }
+      const response = await ApiClient.get(`/api/goals/new-count?userId=${userId}`, options);
+      return response.data.count || 0;
+    } catch (error) {
+      console.error("Failed to get new goals count:", error);
+      return 0;
+    }
+  }
+  static async generateGoals(entryId, options = {}) {
+    try {
+      const response = await ApiClient.post("/api/goals/generate", { entryId }, options);
+      return response.data.goals || [];
+    } catch (error) {
+      throw new GoalServiceError$1(
+        `Failed to generate goals for entry ${entryId}`,
+        error
+      );
+    }
+  }
+  static async getGoalAnalytics(userId, options = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("userId", userId);
+      const response = await ApiClient.get(`/api/goals/analytics?${queryParams}`, options);
+      return response.data;
+    } catch (error) {
+      throw new GoalServiceError$1("Failed to fetch goal analytics", error);
+    }
+  }
+};
+const loader$a = async ({ request }) => {
+  const { authToken, sessionToken } = await requireUserSession(request);
+  const url = new URL(request.url);
+  const userId = url.searchParams.get("userId");
+  if (!userId) {
+    return json$1({ error: "User ID is required" }, { status: 400 });
+  }
+  try {
+    const count = await GoalService$1.getNewGoalsCount(
+      userId,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "x-session-token": sessionToken
+        }
+      }
+    );
+    return json$1({ count }, {
+      headers: {
+        "Cache-Control": "max-age=60, s-maxage=60"
+        // Cache for 60 seconds
+      }
+    });
+  } catch (error) {
+    console.error("Failed to get new goals count:", error);
+    return json$1({ error: "Failed to get new goals count" }, { status: 500 });
+  }
+};
+const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  loader: loader$a
+}, Symbol.toStringTag, { value: "Module" }));
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
@@ -673,7 +923,8 @@ const buttonVariants = cva(
         default: "bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
         noShadow: "bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder",
         neutral: "bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",
-        reverse: "bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder hover:translate-x-reverseBoxShadowX hover:translate-y-reverseBoxShadowY hover:shadow-light dark:hover:shadow-dark"
+        reverse: "bg-main dark:bg-main-700 text-black dark:text-white border-2 border-border dark:border-darkBorder hover:translate-x-reverseBoxShadowX hover:translate-y-reverseBoxShadowY hover:shadow-light dark:hover:shadow-dark",
+        destructive: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-2 border-red-200 dark:border-red-800/50 shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none"
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -702,6 +953,107 @@ const Button = React.forwardRef(
   }
 );
 Button.displayName = "Button";
+const Modal = DialogPrimitive.Root;
+const ModalTrigger = DialogPrimitive.Trigger;
+const ModalPortal = DialogPrimitive.Portal;
+const ModalClose = DialogPrimitive.Close;
+const ModalOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Overlay,
+  {
+    ref,
+    className: cn(
+      "fixed inset-0 z-50 bg-black/60 dark:bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    ),
+    ...props
+  }
+));
+ModalOverlay.displayName = DialogPrimitive.Overlay.displayName;
+const ModalContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(ModalPortal, { children: [
+  /* @__PURE__ */ jsx(ModalOverlay, {}),
+  /* @__PURE__ */ jsxs(
+    DialogPrimitive.Content,
+    {
+      ref,
+      className: cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border-2 border-border dark:border-darkBorder bg-white dark:bg-secondaryBlack p-6 shadow-light dark:shadow-dark duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-base",
+        className
+      ),
+      ...props,
+      children: [
+        children,
+        /* @__PURE__ */ jsxs(DialogPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white dark:ring-offset-secondaryBlack transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-main focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500 dark:data-[state=open]:bg-darkBorder dark:data-[state=open]:text-neutral-400", children: [
+          /* @__PURE__ */ jsx(X, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
+        ] })
+      ]
+    }
+  )
+] }));
+ModalContent.displayName = DialogPrimitive.Content.displayName;
+const ModalHeader = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      className
+    ),
+    ...props
+  }
+);
+ModalHeader.displayName = "ModalHeader";
+const ModalFooter = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      className
+    ),
+    ...props
+  }
+);
+ModalFooter.displayName = "ModalFooter";
+const ModalTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Title,
+  {
+    ref,
+    className: cn(
+      "text-lg font-semibold leading-none tracking-tight text-black dark:text-white",
+      className
+    ),
+    ...props
+  }
+));
+ModalTitle.displayName = DialogPrimitive.Title.displayName;
+const ModalDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Description,
+  {
+    ref,
+    className: cn("text-sm text-neutral-600 dark:text-darkText", className),
+    ...props
+  }
+));
+ModalDescription.displayName = DialogPrimitive.Description.displayName;
+const MOBILE_BREAKPOINT = 768;
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(void 0);
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+    mql.addEventListener("change", onChange);
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return !!isMobile;
+}
 const Input = React.forwardRef(
   ({ className, type, ...props }, ref) => {
     return /* @__PURE__ */ jsx(
@@ -709,7 +1061,7 @@ const Input = React.forwardRef(
       {
         type,
         className: cn(
-          "flex h-10 w-full rounded-base border-2 text-text dark:text-darkText font-base selection:bg-main selection:text-black border-border dark:border-darkBorder bg-white dark:bg-secondaryBlack px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-10 w-full rounded-base border-2 text-text dark:text-darkText font-base selection:bg-main selection:text-black border-border dark:border-[#404040] bg-white dark:bg-secondaryBlack px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           className
         ),
         ref,
@@ -950,11 +1302,15 @@ const Sidebar = React.forwardRef(
         {
           "data-sidebar": "sidebar",
           "data-mobile": "true",
-          className: "w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden",
+          className: cn(
+            "w-[--sidebar-width] bg-background p-0 [&>button]:hidden",
+            className
+          ),
           style: {
             "--sidebar-width": SIDEBAR_WIDTH_MOBILE
           },
           side,
+          onOpenAutoFocus: (e) => e.preventDefault(),
           children: /* @__PURE__ */ jsx("div", { className: "flex h-full w-full flex-col", children })
         }
       ) });
@@ -1471,15 +1827,16 @@ function BreadcrumbNavigation({
   ] }) });
 }
 const sidebarOptions = [
-  { name: "Today's Entry", icon: Book, href: "/todays-entry" },
+  { name: "Journal", icon: Book, href: "/journal/new" },
+  // Updated href
   { name: "Goal Tracking", icon: Target, href: "/goal-tracking" },
-  { name: "Growth Chat", icon: MessageCircle, href: "/chat" },
-  { name: "Action Items", icon: ListTodo, href: "/action-items" },
-  { name: "Progress Dashboard", icon: LineChart, href: "/progress" },
-  { name: "Milestone Tracker", icon: Clock, href: "/milestones" },
-  { name: "Learning Path", icon: ClipboardList, href: "/learning-path" },
-  { name: "Success Stories", icon: Star, href: "/success-stories" },
-  { name: "Habit Builder", icon: Target, href: "/habit-builder" }
+  { name: "Growth Chat", icon: MessageCircle, href: "/chat" }
+  // { name: "Action Items", icon: ListTodo, href: "/action-items" },
+  // { name: "Progress Dashboard", icon: LineChart, href: "/progress" },
+  // { name: "Milestone Tracker", icon: Clock, href: "/milestones" },
+  // { name: "Learning Path", icon: ClipboardList, href: "/learning-path" },
+  // { name: "Success Stories", icon: Star, href: "/success-stories" },
+  // { name: "Habit Builder", icon: Target, href: "/habit-builder" },
 ];
 const DropdownMenu = DropdownMenuPrimitive.Root;
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -1668,7 +2025,7 @@ function JournalSelector({
                 setIsOpen(false);
               },
               children: [
-                /* @__PURE__ */ jsx("div", { className: "flex size-6 items-center justify-center rounded-md border bg-background", children: /* @__PURE__ */ jsx(Plus, { className: "size-4" }) }),
+                /* @__PURE__ */ jsx("div", { className: "flex size-6 items-center justify-center rounded-md border", children: /* @__PURE__ */ jsx(Plus, { className: "size-4" }) }),
                 /* @__PURE__ */ jsx("div", { className: "font-medium text-muted-foreground", children: "Create New Journal" })
               ]
             }
@@ -1755,77 +2112,6 @@ function useUserInfo() {
   }, [data]);
   return { userInfo, isLoading, error };
 }
-const Modal = DialogPrimitive.Root;
-const ModalPortal = DialogPrimitive.Portal;
-const ModalOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Overlay,
-  {
-    ref,
-    className: cn(
-      "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    ),
-    ...props
-  }
-));
-ModalOverlay.displayName = DialogPrimitive.Overlay.displayName;
-const ModalContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(ModalPortal, { children: [
-  /* @__PURE__ */ jsx(ModalOverlay, {}),
-  /* @__PURE__ */ jsxs(
-    DialogPrimitive.Content,
-    {
-      ref,
-      className: cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border-4 border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      ),
-      ...props,
-      children: [
-        children,
-        /* @__PURE__ */ jsxs(DialogPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-black data-[state=open]:text-white", children: [
-          /* @__PURE__ */ jsx(X, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
-        ] })
-      ]
-    }
-  )
-] }));
-ModalContent.displayName = DialogPrimitive.Content.displayName;
-const ModalHeader = ({
-  className,
-  ...props
-}) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    className: cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
-      className
-    ),
-    ...props
-  }
-);
-ModalHeader.displayName = "ModalHeader";
-const ModalTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Title,
-  {
-    ref,
-    className: cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className
-    ),
-    ...props
-  }
-));
-ModalTitle.displayName = DialogPrimitive.Title.displayName;
-const ModalDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Description,
-  {
-    ref,
-    className: cn("text-sm text-gray-500", className),
-    ...props
-  }
-));
-ModalDescription.displayName = DialogPrimitive.Description.displayName;
 function UserInfoForm({ open, onOpenChange }) {
   return /* @__PURE__ */ jsx(Modal, { open, onOpenChange, children: /* @__PURE__ */ jsxs(ModalContent, { children: [
     /* @__PURE__ */ jsxs(ModalHeader, { children: [
@@ -1967,7 +2253,7 @@ function UserMenu() {
             /* @__PURE__ */ jsx(Avatar, { className: "h-8 w-8 rounded-lg", children: /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg text-black dark:text-white bg-main dark:bg-main-700", children: initials }) }),
             /* @__PURE__ */ jsxs("div", { className: "grid flex-1 text-left text-sm leading-tight", children: [
               /* @__PURE__ */ jsx("span", { className: "truncate font-semibold text-black dark:text-white", children: displayName }),
-              /* @__PURE__ */ jsx("span", { className: "truncate text-xs text-black dark:text-white", children: (userInfo == null ? void 0 : userInfo.timezone) || "Loading..." })
+              /* @__PURE__ */ jsx("span", { className: "truncate text-xs text-black dark:text-white", children: (userInfo == null ? void 0 : userInfo.email) || "Loading..." })
             ] }),
             /* @__PURE__ */ jsx(ChevronsUpDown, { className: "ml-auto size-4 text-black dark:text-white" })
           ]
@@ -1985,7 +2271,7 @@ function UserMenu() {
               /* @__PURE__ */ jsx(Avatar, { className: "h-8 w-8 rounded-lg", children: /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg text-black dark:text-white bg-main dark:bg-main-700", children: initials }) }),
               /* @__PURE__ */ jsxs("div", { className: "grid flex-1 text-left text-sm leading-tight", children: [
                 /* @__PURE__ */ jsx("span", { className: "truncate font-semibold", children: displayName }),
-                /* @__PURE__ */ jsx("span", { className: "truncate text-xs", children: (userInfo == null ? void 0 : userInfo.timezone) || "Loading..." })
+                /* @__PURE__ */ jsx("span", { className: "truncate text-xs", children: (userInfo == null ? void 0 : userInfo.email) || "Loading..." })
               ] })
             ] }) }),
             /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
@@ -2123,12 +2409,33 @@ const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */
 ));
 Label.displayName = LabelPrimitive.Root.displayName;
 function AppSidebar({ children }) {
-  const { journals } = useOutletContext();
+  const { journals, selectedJournalId } = useOutletContext();
   const location = useLocation();
-  const [activeJournal, setActiveJournal] = useState(journals[0] ?? null);
+  const navigate = useNavigate();
+  const fetcher = useFetcher();
+  const searchParams = new URLSearchParams(location.search);
+  const journalIdFromUrl = searchParams.get("journalId");
+  const lastJournalIdRef = useRef(null);
+  const [activeJournal, setActiveJournal] = useState(
+    journals.find((j) => j.id === journalIdFromUrl) || // URL has priority
+    journals.find((j) => j.id === selectedJournalId) || // Then cookie
+    journals[0] || // Then first journal
+    null
+  );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(
     journals.length === 0 ? true : false
   );
+  useEffect(() => {
+    if (!activeJournal || activeJournal.id === lastJournalIdRef.current) return;
+    const formData = new FormData();
+    formData.set("journalId", activeJournal.id);
+    formData.set("_action", "setJournal");
+    fetcher.submit(formData, { method: "post", action: "/set-journal" });
+    if (lastJournalIdRef.current !== null) {
+      navigate("/journal/new");
+    }
+    lastJournalIdRef.current = activeJournal.id;
+  }, [activeJournal, navigate, fetcher]);
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs(SidebarProvider, { children: [
       /* @__PURE__ */ jsxs(Sidebar, { children: [
@@ -2144,7 +2451,7 @@ function AppSidebar({ children }) {
         /* @__PURE__ */ jsx(SidebarContent, { className: "scrollbar", children: /* @__PURE__ */ jsx(SidebarGroup, { className: "p-0 border-t-4 border-border dark:border-darkNavBorder", children: /* @__PURE__ */ jsx(SidebarMenu, { className: "gap-0", children: sidebarOptions.map((items) => /* @__PURE__ */ jsx(SidebarMenuItem, { children: /* @__PURE__ */ jsx(SidebarMenuSubButton, { asChild: true, className: "translate-x-0", children: /* @__PURE__ */ jsxs(
           Link,
           {
-            className: `rounded-none h-auto block border-b-4 border-border dark:border-darkNavBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main50 dark:hover:bg-main-600 dark:hover:text-white ${location.pathname === items.href ? "bg-main50 dark:bg-main-700 dark:text-white" : ""}`,
+            className: `rounded-none h-auto block border-b-4 border-border dark:border-darkNavBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white ${location.pathname === items.href ? "bg-main50 dark:bg-main-700 dark:text-white" : ""}`,
             to: items.href,
             children: [
               React.createElement(items.icon, { size: 24 }),
@@ -2164,10 +2471,7 @@ function AppSidebar({ children }) {
       ] })
     ] }),
     /* @__PURE__ */ jsx(Dialog, { open: isCreateModalOpen, onOpenChange: setIsCreateModalOpen, children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-md bg-white dark:bg-secondaryBlack", children: [
-      /* @__PURE__ */ jsxs(DialogHeader, { children: [
-        /* @__PURE__ */ jsx(DialogTitle, { children: "Create New Journal" }),
-        /* @__PURE__ */ jsx(DialogDescription, { children: "Enter a name for your new journal" })
-      ] }),
+      /* @__PURE__ */ jsx(DialogHeader, { children: /* @__PURE__ */ jsx(DialogTitle, { className: "text-slate-900 dark:text-white", children: "Create New Journal" }) }),
       /* @__PURE__ */ jsxs(
         Form$1,
         {
@@ -2185,7 +2489,14 @@ function AppSidebar({ children }) {
           className: "space-y-4",
           children: [
             /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-              /* @__PURE__ */ jsx(Label, { htmlFor: "name", className: "text-sm font-medium", children: "Journal Name" }),
+              /* @__PURE__ */ jsx(
+                Label,
+                {
+                  htmlFor: "name",
+                  className: "text-sm font-medium text-slate-900 dark:text-white",
+                  children: "Journal Name"
+                }
+              ),
               /* @__PURE__ */ jsx(
                 Input,
                 {
@@ -2193,7 +2504,7 @@ function AppSidebar({ children }) {
                   name: "name",
                   type: "text",
                   required: true,
-                  className: "w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondaryBlack dark:border-slate-700",
+                  className: "w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400",
                   placeholder: "My Journal"
                 }
               )
@@ -2215,10 +2526,898 @@ function AppSidebar({ children }) {
 function MainLayout({ children }) {
   return /* @__PURE__ */ jsx("div", { className: "bg-background dark:bg-secondaryBlack w-full", children: /* @__PURE__ */ jsx(AppSidebar, { children: /* @__PURE__ */ jsx("main", { children }) }) });
 }
+const updateEntry = async (request, journalId, entryId, payload) => {
+  if (!payload.content) {
+    throw new Error("Content is required");
+  }
+  try {
+    await ApiClient.putProtected(
+      `/journals/${journalId}/entries/${entryId}`,
+      request,
+      payload
+    );
+  } catch (error) {
+    console.error("Error updating entry:", error);
+    const errorMessage = error instanceof ApiError ? error.message : "Failed to update entry. Please try again.";
+    throw new Error(errorMessage);
+  }
+};
+const deleteEntry = async (request, journalId, entryId) => {
+  if (!entryId) {
+    throw new Error("Entry ID is required for deletion");
+  }
+  try {
+    await ApiClient.deleteProtected(
+      `/journals/${journalId}/entries/${entryId}`,
+      request
+    );
+  } catch (error) {
+    console.error("Error deleting entry:", error);
+    const errorMessage = error instanceof ApiError ? error.message : "Failed to delete entry. Please try again.";
+    throw new Error(errorMessage);
+  }
+};
+const formatClasses = {
+  bold: "font-bold",
+  italic: "italic",
+  underline: "underline",
+  strikethrough: "line-through",
+  code: "bg-gray-100 dark:bg-gray-700 px-1 py-0.5 font-mono text-[94%]",
+  link: "text-blue-600 dark:text-blue-400 no-underline"
+};
+const headingClasses = {
+  h1: "text-2xl text-gray-900 dark:text-white font-normal mb-3",
+  h2: "text-base text-gray-600 dark:text-gray-300 font-bold mt-2.5 uppercase"
+};
+const listClasses = {
+  ol: "pl-4 m-0",
+  ul: "pl-4 m-0",
+  li: "my-2 mx-8",
+  nestedLi: "list-none"
+};
+const quoteClasses = "ml-5 text-gray-600 dark:text-gray-300 border-l-4 border-gray-300 dark:border-gray-600 pl-4";
+const ExampleTheme = {
+  code: formatClasses.code,
+  heading: {
+    h1: headingClasses.h1,
+    h2: headingClasses.h2
+  },
+  image: "",
+  link: formatClasses.link,
+  list: {
+    listitem: listClasses.li,
+    nested: {
+      listitem: listClasses.nestedLi
+    },
+    ol: listClasses.ol,
+    ul: listClasses.ul
+  },
+  ltr: "ltr",
+  paragraph: "text-base text-gray-900 dark:text-white",
+  placeholder: "text-gray-400 dark:text-gray-500",
+  quote: quoteClasses,
+  rtl: "rtl",
+  text: {
+    bold: formatClasses.bold,
+    code: formatClasses.code,
+    hashtag: "text-blue-500 dark:text-blue-400",
+    italic: formatClasses.italic,
+    overflowed: "opacity-50",
+    strikethrough: formatClasses.strikethrough,
+    underline: formatClasses.underline,
+    underlineStrikethrough: `${formatClasses.underline} ${formatClasses.strikethrough}`
+  }
+};
+const LowPriority = 1;
+function Divider() {
+  return /* @__PURE__ */ jsx("div", { className: "mx-2 h-4 w-px bg-gray-200 dark:bg-gray-700" });
+}
+function ToolbarPlugin() {
+  const [editor] = useLexicalComposerContext();
+  const toolbarRef = useRef(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
+  const [isStrikethrough, setIsStrikethrough] = useState(false);
+  const $updateToolbar = useCallback(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      setIsBold(selection.hasFormat("bold"));
+      setIsItalic(selection.hasFormat("italic"));
+      setIsUnderline(selection.hasFormat("underline"));
+      setIsStrikethrough(selection.hasFormat("strikethrough"));
+    }
+  }, []);
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          $updateToolbar();
+        });
+      }),
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        (_payload, _newEditor) => {
+          $updateToolbar();
+          return false;
+        },
+        LowPriority
+      ),
+      editor.registerCommand(
+        CAN_UNDO_COMMAND,
+        (payload) => {
+          setCanUndo(payload);
+          return false;
+        },
+        LowPriority
+      ),
+      editor.registerCommand(
+        CAN_REDO_COMMAND,
+        (payload) => {
+          setCanRedo(payload);
+          return false;
+        },
+        LowPriority
+      )
+    );
+  }, [editor, $updateToolbar]);
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "flex items-center p-2 border-b border-gray-200 dark:border-gray-700",
+      ref: toolbarRef,
+      children: [
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            disabled: !canUndo,
+            onClick: () => {
+              editor.dispatchCommand(UNDO_COMMAND, void 0);
+            },
+            className: `p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 ${!canUndo ? "cursor-not-allowed" : ""}`,
+            "aria-label": "Undo",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M9 14l-4-4 4-4",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M5 10h11a4 4 0 0 1 0 8h-1",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            disabled: !canRedo,
+            onClick: () => {
+              editor.dispatchCommand(REDO_COMMAND, void 0);
+            },
+            className: `p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 ${!canRedo ? "cursor-not-allowed" : ""}`,
+            "aria-label": "Redo",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M15 14l4-4-4-4",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M19 10H8a4 4 0 0 0 0 8h1",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(Divider, {}),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
+            },
+            className: `p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${isBold ? "bg-gray-200 dark:bg-gray-600" : ""}`,
+            "aria-label": "Format Bold",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx("path", { d: "M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z" }),
+                  /* @__PURE__ */ jsx("path", { d: "M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z" })
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
+            },
+            className: `p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${isItalic ? "bg-gray-200 dark:bg-gray-600" : ""}`,
+            "aria-label": "Format Italics",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "19",
+                      y1: "4",
+                      x2: "10",
+                      y2: "4",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "14",
+                      y1: "20",
+                      x2: "5",
+                      y2: "20",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("line", { x1: "15", y1: "4", x2: "9", y2: "20", strokeWidth: "2" })
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
+            },
+            className: `p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${isUnderline ? "bg-gray-200 dark:bg-gray-600" : ""}`,
+            "aria-label": "Format Underline",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "4",
+                      y1: "21",
+                      x2: "20",
+                      y2: "21",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
+            },
+            className: `p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${isStrikethrough ? "bg-gray-200 dark:bg-gray-600" : ""}`,
+            "aria-label": "Format Strikethrough",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "5",
+                      y1: "12",
+                      x2: "19",
+                      y2: "12",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M16 6C16 6 14.5 4 12 4C9.5 4 7 6 7 8C7 10 9 11 12 11",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      d: "M8 18C8 18 9.5 20 12 20C14.5 20 17 18 17 16C17 14 15 13 12 13",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(Divider, {}),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left");
+            },
+            className: "p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
+            "aria-label": "Left Align",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "6",
+                      x2: "21",
+                      y2: "6",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "12",
+                      x2: "15",
+                      y2: "12",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "18",
+                      x2: "18",
+                      y2: "18",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center");
+            },
+            className: "p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
+            "aria-label": "Center Align",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "6",
+                      x2: "21",
+                      y2: "6",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "6",
+                      y1: "12",
+                      x2: "18",
+                      y2: "12",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "4",
+                      y1: "18",
+                      x2: "20",
+                      y2: "18",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right");
+            },
+            className: "p-2 mr-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
+            "aria-label": "Right Align",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "6",
+                      x2: "21",
+                      y2: "6",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "9",
+                      y1: "12",
+                      x2: "21",
+                      y2: "12",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "6",
+                      y1: "18",
+                      x2: "21",
+                      y2: "18",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "justify");
+            },
+            className: "p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
+            "aria-label": "Justify Align",
+            children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "w-4 h-4 text-gray-600 dark:text-gray-300",
+                viewBox: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "6",
+                      x2: "21",
+                      y2: "6",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "12",
+                      x2: "21",
+                      y2: "12",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "line",
+                    {
+                      x1: "3",
+                      y1: "18",
+                      x2: "21",
+                      y2: "18",
+                      strokeWidth: "2",
+                      strokeLinecap: "round"
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        )
+      ]
+    }
+  );
+}
+function InitialContentPlugin({ initialContent }) {
+  const [editor] = useLexicalComposerContext();
+  useEffect(() => {
+    const currentText = editor.getEditorState().read(() => $getRoot().getTextContent());
+    if (initialContent !== currentText) {
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        const paragraphNode = $createParagraphNode();
+        const textNode = $createTextNode(initialContent || "");
+        paragraphNode.append(textNode);
+        root.append(paragraphNode);
+      });
+    }
+  }, [editor, initialContent]);
+  return null;
+}
+function Placeholder() {
+  return /* @__PURE__ */ jsx("div", { className: "editor-placeholder", children: "Enter your thoughts..." });
+}
+function Editor({
+  onChange,
+  initialContent
+}) {
+  const handleEditorChange = useCallback(
+    (editorState) => {
+      editorState.read(() => {
+        const root = $getRoot();
+        const text = root.getTextContent();
+        console.log("Extracted text:", text);
+        onChange(text);
+      });
+    },
+    [onChange]
+  );
+  const initialConfig = {
+    namespace: "ControlledEditor",
+    onError: (error) => {
+      console.error(error);
+    },
+    nodes: [
+      // Re-enabled all nodes
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      QuoteNode,
+      LinkNode,
+      CodeNode,
+      AutoLinkNode,
+      ParagraphNode,
+      TextNode
+    ],
+    theme: ExampleTheme,
+    // Apply custom theme
+    editorState: null
+    // Set initial state to null; the InitialContentPlugin will populate it.
+  };
+  console.log("Rendering Editor, initialContent:", initialContent);
+  return /* @__PURE__ */ jsx(LexicalComposer, { initialConfig, children: /* @__PURE__ */ jsxs("div", { className: "relative bg-white dark:bg-secondaryBlack rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden", children: [
+    /* @__PURE__ */ jsx(ToolbarPlugin, {}),
+    " ",
+    /* @__PURE__ */ jsxs("div", { className: "relative min-h-[150px] bg-white dark:bg-secondaryBlack", children: [
+      /* @__PURE__ */ jsx(
+        RichTextPlugin,
+        {
+          contentEditable: /* @__PURE__ */ jsx(ContentEditable, { className: "min-h-[150px] resize-none text-[15px] relative tab-[1] outline-none p-[15px_10px] caret-gray-600 dark:caret-white" }),
+          placeholder: /* @__PURE__ */ jsx(Placeholder, {}),
+          ErrorBoundary: LexicalErrorBoundary
+        }
+      ),
+      /* @__PURE__ */ jsx(HistoryPlugin, {}),
+      " ",
+      /* @__PURE__ */ jsx(OnChangePlugin, { onChange: handleEditorChange }),
+      " ",
+      /* @__PURE__ */ jsx(InitialContentPlugin, { initialContent }),
+      " "
+    ] })
+  ] }) });
+}
+const loader$9 = async ({ request, params }) => {
+  await requireUserSession(request);
+  const entryId = params.id;
+  const journalId = await getSelectedJournalId(request);
+  if (!journalId) {
+    throw redirect("/select-journal");
+  }
+  if (!entryId) {
+    throw new Response("Entry ID not found", { status: 404 });
+  }
+  console.log(
+    `Loader: Attempting to fetch entry ${entryId} for journal ${journalId}`
+  );
+  try {
+    const response = await ApiClient.getProtected(
+      `/journals/${journalId}/entries/${entryId}`,
+      request
+    );
+    if (!(response == null ? void 0 : response.data)) {
+      throw new Response("Entry data not found in response", { status: 404 });
+    }
+    const entry2 = response.data;
+    if (!entry2) {
+      throw new Response("Entry not found", { status: 404 });
+    }
+    return json$1({ entry: entry2 });
+  } catch (e) {
+    console.error("Failed to load entry:", e);
+    if (e instanceof ApiError && e.statusCode === 404) {
+      throw new Response("Entry not found", { status: 404 });
+    }
+    const errorMessage = e instanceof Error ? e.message : "Failed to load entry. Please try again.";
+    throw new Response(errorMessage, { status: 500 });
+  }
+};
+const action$a = async ({ request, params }) => {
+  const journalId = await getSelectedJournalId(request);
+  const entryId = params.id;
+  if (!entryId) {
+    return json$1({
+      success: false,
+      error: "Entry ID is required for this action"
+    });
+  }
+  if (!journalId) {
+    return json$1({ success: false, error: "No journal selected" });
+  }
+  try {
+    const formData = await request.formData();
+    const content = formData.get("content");
+    const _action = formData.get("_action");
+    if (_action === "delete") {
+      await deleteEntry(request, journalId, entryId);
+      return redirect("/journal/new");
+    } else {
+      await updateEntry(request, journalId, entryId, { content });
+      return json$1({
+        success: true,
+        message: "Entry saved successfully!"
+      });
+    }
+  } catch (error) {
+    console.error("Error processing action:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
+    return json$1({ success: false, error: errorMessage });
+  }
+};
+function EditJournalEntry() {
+  var _a, _b;
+  const { entry: entry2 } = useLoaderData();
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const submit = useSubmit();
+  const [content, setContent] = useState(entry2.content ?? "");
+  useEffect(() => {
+    if (actionData == null ? void 0 : actionData.success) {
+      toast.success(actionData.message || "Entry saved successfully!");
+    } else if (actionData == null ? void 0 : actionData.error) {
+      toast.error(actionData.error);
+    }
+  }, [actionData]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    formData.set("content", content);
+    submit(formData, { method: "post" });
+  };
+  const handleConfirmDelete = () => {
+    const formData = new FormData();
+    formData.set("_action", "delete");
+    formData.set("entryId", entry2.id);
+    submit(formData, { method: "post", replace: true });
+  };
+  const isSubmitting = navigation.state === "submitting";
+  const isDeleting = ((_a = navigation.formData) == null ? void 0 : _a.get("_action")) === "delete" && isSubmitting;
+  const isSaving = ((_b = navigation.formData) == null ? void 0 : _b.get("_action")) !== "delete" && isSubmitting;
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "flex h-full relative animate-fade-in", children: /* @__PURE__ */ jsx("div", { className: "flex-1 flex justify-center", children: /* @__PURE__ */ jsx("div", { className: "w-full max-w-3xl p-4 md:p-8", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col h-full", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex items-center mb-4", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/journal/new",
+          className: "hover:opacity-80 text-gray-900 dark:text-white",
+          children: /* @__PURE__ */ jsx(ArrowLeft, { className: "w-5 h-5" })
+        }
+      ),
+      /* @__PURE__ */ jsxs("h1", { className: "text-xl font-semibold text-gray-900 dark:text-white", children: [
+        "Edit Entry -",
+        " ",
+        new Date(entry2.createdAt).toLocaleDateString()
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs(
+      Form$1,
+      {
+        method: "post",
+        onSubmit: handleSubmit,
+        className: "flex-1 flex flex-col",
+        children: [
+          /* @__PURE__ */ jsx("input", { type: "hidden", name: "entryId", value: entry2.id }),
+          /* @__PURE__ */ jsx("div", { className: "flex-1 bg-neutral-50 dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-4 min-h-[200px]", children: /* @__PURE__ */ jsx(
+            Editor,
+            {
+              onChange: setContent,
+              initialContent: content
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between mt-4", children: [
+            /* @__PURE__ */ jsxs(Modal, { children: [
+              /* @__PURE__ */ jsx(ModalTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  variant: "destructive",
+                  type: "button",
+                  disabled: isSubmitting,
+                  className: "flex items-center gap-2",
+                  children: [
+                    /* @__PURE__ */ jsx(Trash2, { className: "w-4 h-4" }),
+                    "Delete"
+                  ]
+                }
+              ) }),
+              /* @__PURE__ */ jsxs(ModalContent, { children: [
+                /* @__PURE__ */ jsxs(ModalHeader, { children: [
+                  /* @__PURE__ */ jsx(ModalTitle, { children: "Confirm Deletion" }),
+                  /* @__PURE__ */ jsx(ModalDescription, { children: "Are you sure you want to delete this journal entry? This action cannot be undone." })
+                ] }),
+                /* @__PURE__ */ jsxs(ModalFooter, { children: [
+                  /* @__PURE__ */ jsx(ModalClose, { asChild: true, children: /* @__PURE__ */ jsx(Button, { variant: "neutral", disabled: isDeleting, children: "Cancel" }) }),
+                  /* @__PURE__ */ jsxs(
+                    Button,
+                    {
+                      variant: "destructive",
+                      onClick: handleConfirmDelete,
+                      disabled: isDeleting,
+                      className: "flex items-center gap-2",
+                      children: [
+                        isDeleting ? /* @__PURE__ */ jsx(Loader2, { className: "w-4 h-4 animate-spin" }) : /* @__PURE__ */ jsx(Trash2, { className: "w-4 h-4" }),
+                        "Confirm Delete"
+                      ]
+                    }
+                  )
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx(Link, { to: "/journal/new", children: /* @__PURE__ */ jsx(
+              Button,
+              {
+                variant: "neutral",
+                type: "button",
+                disabled: isSubmitting,
+                children: "Cancel"
+              }
+            ) }),
+            /* @__PURE__ */ jsxs(
+              Button,
+              {
+                type: "submit",
+                disabled: isSubmitting,
+                className: "flex items-center gap-2",
+                children: [
+                  isSaving ? /* @__PURE__ */ jsx(Loader2, { className: "w-4 h-4 animate-spin" }) : /* @__PURE__ */ jsx(Save, { className: "w-4 h-4" }),
+                  "Save Changes"
+                ]
+              }
+            )
+          ] })
+        ]
+      }
+    )
+  ] }) }) }) }) }) });
+}
+const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  action: action$a,
+  default: EditJournalEntry,
+  loader: loader$9
+}, Symbol.toStringTag, { value: "Module" }));
 function SuccessStories() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Success Stories" }) }) });
 }
-const route1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: SuccessStories
 }, Symbol.toStringTag, { value: "Module" }));
@@ -2257,10 +3456,10 @@ const FormMessage = React.forwardRef(({ className, children, ...props }, ref) =>
   );
 });
 FormMessage.displayName = "FormMessage";
-async function loader$5() {
+async function loader$8() {
   return json$1({});
 }
-async function action$7({ request }) {
+async function action$9({ request }) {
   var _a, _b, _c;
   const formData = await request.formData();
   const email = (_a = formData.get("email")) == null ? void 0 : _a.toString();
@@ -2289,6 +3488,8 @@ async function action$7({ request }) {
 function RegisterPage() {
   var _a, _b, _c;
   const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
   return /* @__PURE__ */ jsx("div", { className: "container flex h-screen w-screen flex-col items-center justify-center mx-auto", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2 text-center", children: [
       /* @__PURE__ */ jsx("h1", { className: "text-2xl font-semibold tracking-tight dark:text-white text-text", children: "Create an account" }),
@@ -2345,7 +3546,15 @@ function RegisterPage() {
         ),
         ((_c = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _c.confirmPassword) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors.confirmPassword })
       ] }),
-      /* @__PURE__ */ jsx(Button, { type: "submit", className: "w-full", children: "Sign Up" })
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          type: "submit",
+          className: "w-full",
+          disabled: isSubmitting,
+          children: isSubmitting ? "Creating account..." : "Sign Up"
+        }
+      )
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "text-center text-sm dark:text-white text-text", children: [
       "Already have an account?",
@@ -2354,52 +3563,685 @@ function RegisterPage() {
     ] })
   ] }) });
 }
-const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action: action$7,
+  action: action$9,
   default: RegisterPage,
-  loader: loader$5
+  loader: loader$8
 }, Symbol.toStringTag, { value: "Module" }));
-function GoalTracking() {
-  return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Goal Tracking" }) }) });
+const Card = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn(
+      "rounded-base shadow-light dark:shadow-dark border-2 border-border dark:border-darkBorder bg-main text-black",
+      className
+    ),
+    ...props
+  }
+));
+Card.displayName = "Card";
+const CardHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("flex flex-col space-y-1.5 p-6", className),
+    ...props
+  }
+));
+CardHeader.displayName = "CardHeader";
+const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+  // eslint-disable-next-line jsx-a11y/heading-has-content
+  /* @__PURE__ */ jsx(
+    "h3",
+    {
+      ref,
+      className: cn(
+        "text-xl leading-none font-heading tracking-tight",
+        className
+      ),
+      ...props
+    }
+  )
+));
+CardTitle.displayName = "CardTitle";
+const CardDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "p",
+  {
+    ref,
+    className: cn("text-sm text-black font-base !mt-3", className),
+    ...props
+  }
+));
+CardDescription.displayName = "CardDescription";
+const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn("p-6 pt-0", className), ...props }));
+CardContent.displayName = "CardContent";
+const CardFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("flex items-center p-6 pt-0", className),
+    ...props
+  }
+));
+CardFooter.displayName = "CardFooter";
+function GoalCard({ goal }) {
+  const getStatusBadge = () => {
+    if (goal.deletedAt) return /* @__PURE__ */ jsx("span", { className: "bg-red-100 dark:bg-red-900/70 text-red-800 dark:text-white px-2 py-1 rounded-base text-xs font-medium border-2 border-red-800 dark:border-red-400", children: "Deleted" });
+    if (goal.completedAt) return /* @__PURE__ */ jsx("span", { className: "bg-green-100 dark:bg-green-900/70 text-green-800 dark:text-white px-2 py-1 rounded-base text-xs font-medium border-2 border-green-800 dark:border-green-400", children: "Completed" });
+    if (goal.acceptedAt) return /* @__PURE__ */ jsx("span", { className: "bg-blue-100 dark:bg-blue-900/70 text-blue-800 dark:text-white px-2 py-1 rounded-base text-xs font-medium border-2 border-blue-800 dark:border-blue-400", children: "Accepted" });
+    return /* @__PURE__ */ jsx("span", { className: "bg-yellow-100 dark:bg-yellow-900/70 text-yellow-800 dark:text-white px-2 py-1 rounded-base text-xs font-medium border-2 border-yellow-800 dark:border-yellow-400", children: "Suggested" });
+  };
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+  return /* @__PURE__ */ jsx(Card, { className: "goal-card bg-white dark:bg-gray-800 border-2 dark:border-gray-700", children: /* @__PURE__ */ jsx(CardContent, { className: "p-4", children: /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start", children: [
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center space-x-2 mb-1 mt-2", children: [
+        getStatusBadge(),
+        goal.relatedMetricType && /* @__PURE__ */ jsx("span", { className: "bg-main-100 dark:bg-main-900/70 text-black dark:text-white px-2 py-1 rounded-base text-xs font-medium border-2 border-border dark:border-main-600", children: goal.relatedMetricType })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "text-lg font-medium mt-2 text-black dark:text-white", children: goal.content }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-2 text-sm text-black/70 dark:text-white/90", children: [
+        /* @__PURE__ */ jsxs("p", { children: [
+          "Suggested: ",
+          formatDate(goal.suggestedAt)
+        ] }),
+        goal.targetDate && /* @__PURE__ */ jsxs("p", { children: [
+          "Target completion: ",
+          formatDate(goal.targetDate)
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex space-x-2", children: [
+      !goal.acceptedAt && !goal.completedAt && !goal.deletedAt && /* @__PURE__ */ jsxs(Form$1, { method: "post", children: [
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "goalId", value: goal.id }),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "_action", value: "acceptGoal" }),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            type: "submit",
+            size: "sm",
+            variant: "default",
+            className: "bg-blue-600 hover:bg-blue-700 text-white font-medium",
+            children: "Accept"
+          }
+        )
+      ] }),
+      goal.acceptedAt && !goal.completedAt && !goal.deletedAt && /* @__PURE__ */ jsxs(Form$1, { method: "post", children: [
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "goalId", value: goal.id }),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "_action", value: "completeGoal" }),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            type: "submit",
+            size: "sm",
+            variant: "default",
+            className: "bg-green-600 hover:bg-green-700 text-white font-medium border-none",
+            children: "Complete"
+          }
+        )
+      ] }),
+      !goal.deletedAt && /* @__PURE__ */ jsxs(Form$1, { method: "post", children: [
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "goalId", value: goal.id }),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "_action", value: "deleteGoal" }),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            type: "submit",
+            size: "sm",
+            variant: "default",
+            className: "bg-red-600 hover:bg-red-700 text-white font-medium border-none",
+            children: "Delete"
+          }
+        )
+      ] })
+    ] })
+  ] }) }) });
 }
-const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+function GoalList({ goals }) {
+  if (goals.length === 0) {
+    return /* @__PURE__ */ jsx("div", { className: "text-center py-8 bg-gray-50 rounded-lg animate-fade-in", children: /* @__PURE__ */ jsx("p", { className: "text-gray-500", children: "No goals found matching your filters." }) });
+  }
+  return /* @__PURE__ */ jsx("div", { className: "space-y-4", children: goals.map((goal) => /* @__PURE__ */ jsx("div", { className: "goal-list-item", children: /* @__PURE__ */ jsx(
+    GoalCard,
+    {
+      goal
+    }
+  ) }, goal.id)) });
+}
+function FilterDropdown({ label, value, options, onChange }) {
+  var _a;
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium text-black dark:text-white mb-1", children: label }),
+    /* @__PURE__ */ jsxs(DropdownMenu, { children: [
+      /* @__PURE__ */ jsx(DropdownMenuTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(
+        Button,
+        {
+          variant: "default",
+          className: "w-full justify-between",
+          children: [
+            /* @__PURE__ */ jsx("span", { children: (_a = options.find((opt) => opt.value === value)) == null ? void 0 : _a.label }),
+            /* @__PURE__ */ jsx(ChevronDown, { className: "ml-auto h-4 w-4" })
+          ]
+        }
+      ) }),
+      /* @__PURE__ */ jsx(
+        DropdownMenuContent,
+        {
+          className: "w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg bg-background dark:bg-secondaryBlack",
+          align: "start",
+          side: "bottom",
+          sideOffset: 4,
+          children: options.map((option) => /* @__PURE__ */ jsx(
+            DropdownMenuItem,
+            {
+              onClick: () => onChange(option.value),
+              className: "gap-2 p-2 mb-2 cursor-pointer",
+              children: option.label
+            },
+            option.value
+          ))
+        }
+      )
+    ] })
+  ] });
+}
+function GoalFilters({ filters, setFilters }) {
+  const handleFilterChange = (key, value) => {
+    setFilters({ ...filters, [key]: value });
+  };
+  const statusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "suggested", label: "Suggested" },
+    { value: "accepted", label: "Accepted" },
+    { value: "completed", label: "Completed" },
+    { value: "deleted", label: "Deleted" }
+  ];
+  const dateRangeOptions = [
+    { value: "all", label: "All Time" },
+    { value: "today", label: "Today" },
+    { value: "week", label: "This Week" },
+    { value: "month", label: "This Month" }
+  ];
+  const metricOptions = [
+    { value: "all", label: "All Metrics" },
+    { value: "resilience", label: "Resilience" },
+    { value: "effort", label: "Effort" },
+    { value: "challenge", label: "Challenge" },
+    { value: "feedback", label: "Feedback" },
+    { value: "learning", label: "Learning" }
+  ];
+  return /* @__PURE__ */ jsx("div", { className: "rounded-base border-2 border-border dark:border-gray-700 bg-white dark:bg-gray-800 p-4 animate-fade-in", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4", children: [
+    /* @__PURE__ */ jsx(
+      FilterDropdown,
+      {
+        label: "Status",
+        value: filters.status,
+        options: statusOptions,
+        onChange: (value) => handleFilterChange("status", value)
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      FilterDropdown,
+      {
+        label: "Date Range",
+        value: filters.dateRange,
+        options: dateRangeOptions,
+        onChange: (value) => handleFilterChange("dateRange", value)
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      FilterDropdown,
+      {
+        label: "Growth Metric",
+        value: filters.metricType,
+        options: metricOptions,
+        onChange: (value) => handleFilterChange("metricType", value)
+      }
+    )
+  ] }) });
+}
+function GoalStats({ goals }) {
+  const totalGoals = goals.length;
+  const acceptedGoals = goals.filter((g) => g.acceptedAt && !g.deletedAt).length;
+  const completedGoals = goals.filter((g) => g.completedAt).length;
+  const completionRate = totalGoals > 0 ? Math.round(completedGoals / totalGoals * 100) : 0;
+  return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4", children: [
+    /* @__PURE__ */ jsx(Card, { className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700", children: /* @__PURE__ */ jsxs(CardContent, { className: "p-4", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Total Goals" }),
+      /* @__PURE__ */ jsx("p", { className: "text-2xl font-bold text-black dark:text-white", children: totalGoals })
+    ] }) }),
+    /* @__PURE__ */ jsx(Card, { className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700", style: { animationDelay: "0.1s" }, children: /* @__PURE__ */ jsxs(CardContent, { className: "p-4", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Accepted" }),
+      /* @__PURE__ */ jsx("p", { className: "text-2xl font-bold text-black dark:text-white", children: acceptedGoals })
+    ] }) }),
+    /* @__PURE__ */ jsx(Card, { className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700", style: { animationDelay: "0.2s" }, children: /* @__PURE__ */ jsxs(CardContent, { className: "p-4", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Completed" }),
+      /* @__PURE__ */ jsx("p", { className: "text-2xl font-bold text-black dark:text-white", children: completedGoals })
+    ] }) }),
+    /* @__PURE__ */ jsx(Card, { className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700", style: { animationDelay: "0.3s" }, children: /* @__PURE__ */ jsxs(CardContent, { className: "p-4", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Completion Rate" }),
+      /* @__PURE__ */ jsxs("p", { className: "text-2xl font-bold text-black dark:text-white", children: [
+        completionRate,
+        "%"
+      ] })
+    ] }) })
+  ] });
+}
+function GoalDashboard({ initialGoals = [], actionData }) {
+  const [goals, setGoals] = useState(initialGoals);
+  const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    status: "all",
+    dateRange: "all",
+    metricType: "all"
+  });
+  useEffect(() => {
+    if (actionData == null ? void 0 : actionData.goal) {
+      setGoals(
+        (prevGoals) => prevGoals.map((goal) => {
+          var _a;
+          return goal.id === ((_a = actionData.goal) == null ? void 0 : _a.id) ? actionData.goal : goal;
+        })
+      );
+    }
+  }, [actionData]);
+  useEffect(() => {
+    setIsLoading(true);
+    const filteredGoals = initialGoals.filter((goal) => {
+      if (filters.status !== "all") {
+        if (filters.status === "suggested" && (goal.acceptedAt || goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === "accepted" && (!goal.acceptedAt || goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === "completed" && (!goal.completedAt || goal.deletedAt)) {
+          return false;
+        }
+        if (filters.status === "deleted" && !goal.deletedAt) {
+          return false;
+        }
+      }
+      if (filters.metricType !== "all" && goal.relatedMetricType !== filters.metricType) {
+        return false;
+      }
+      if (filters.dateRange !== "all") {
+        const now = /* @__PURE__ */ new Date();
+        const goalDate = new Date(goal.suggestedAt);
+        if (filters.dateRange === "today") {
+          return goalDate.toDateString() === now.toDateString();
+        }
+        if (filters.dateRange === "week") {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          return goalDate >= weekAgo;
+        }
+        if (filters.dateRange === "month") {
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(now.getMonth() - 1);
+          return goalDate >= monthAgo;
+        }
+      }
+      return true;
+    });
+    setGoals(filteredGoals);
+    setIsLoading(false);
+  }, [filters, initialGoals]);
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-6 animate-fade-in", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex justify-between items-center mb-6", children: /* @__PURE__ */ jsx("h2", { className: "text-2xl font-heading text-black dark:text-white", children: "Your Growth Goals" }) }),
+    /* @__PURE__ */ jsx(GoalStats, { goals }),
+    /* @__PURE__ */ jsx(GoalFilters, { filters, setFilters }),
+    isLoading ? /* @__PURE__ */ jsx("div", { className: "flex justify-center py-8 rounded-base border-2 border-border dark:border-darkBorder bg-main-50 dark:bg-main-900/20 animate-pulse", children: /* @__PURE__ */ jsx("p", { className: "text-black dark:text-white", children: "Loading goals..." }) }) : /* @__PURE__ */ jsx(
+      GoalList,
+      {
+        goals
+      }
+    )
+  ] });
+}
+class GoalServiceError2 extends Error {
+  constructor(message, originalError) {
+    super(message);
+    this.originalError = originalError;
+    this.name = "GoalServiceError";
+  }
+}
+class GoalService2 {
+  static async getGoals(filters, options = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters) {
+        if (filters.userId) {
+          queryParams.append("userId", filters.userId);
+        }
+        if (filters.status && filters.status !== "all") {
+          queryParams.append("status", filters.status);
+        }
+        if (filters.dateRange && filters.dateRange !== "all") {
+          queryParams.append("dateRange", filters.dateRange);
+        }
+        if (filters.metricType && filters.metricType !== "all") {
+          queryParams.append("metricType", filters.metricType);
+        }
+      }
+      const response = await ApiClient.get(`/api/goals?${queryParams}`, options);
+      return response.data.goals;
+    } catch (error) {
+      throw new GoalServiceError2("Failed to fetch goals", error);
+    }
+  }
+  static async acceptGoal(goalId, options = {}) {
+    try {
+      const response = await ApiClient.post(`/api/goals/${goalId}/accept`, {}, options);
+      return response.data.goal;
+    } catch (error) {
+      throw new GoalServiceError2(`Failed to accept goal with id ${goalId}`, error);
+    }
+  }
+  static async completeGoal(goalId, options = {}) {
+    try {
+      const response = await ApiClient.post(`/api/goals/${goalId}/complete`, {}, options);
+      return response.data.goal;
+    } catch (error) {
+      throw new GoalServiceError2(`Failed to complete goal with id ${goalId}`, error);
+    }
+  }
+  static async deleteGoal(goalId, options = {}) {
+    try {
+      await ApiClient.delete(`/api/goals/${goalId}`, options);
+    } catch (error) {
+      throw new GoalServiceError2(`Failed to delete goal with id ${goalId}`, error);
+    }
+  }
+  static async getNewGoalsCount(userId, options = {}) {
+    try {
+      if (!userId) {
+        return 0;
+      }
+      const queryParams = new URLSearchParams();
+      queryParams.append("userId", userId);
+      const response = await ApiClient.get(`/api/goals/new-count?${queryParams}`, options);
+      return response.data.count || 0;
+    } catch (error) {
+      console.error("Failed to get new goals count:", error);
+      return 0;
+    }
+  }
+  static async generateGoals(entryId, options = {}) {
+    try {
+      const response = await ApiClient.post("/api/goals/generate", { entryId }, options);
+      return response.data.goals || [];
+    } catch (error) {
+      throw new GoalServiceError2(`Failed to generate goals for entry ${entryId}`, error);
+    }
+  }
+  static async getGoalAnalytics(userId, dateRange, options = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("userId", userId);
+      if (dateRange) {
+        queryParams.append("startDate", dateRange.startDate);
+        queryParams.append("endDate", dateRange.endDate);
+      }
+      const response = await ApiClient.get(`/api/goals/analytics?${queryParams}`, options);
+      return response.data.analytics;
+    } catch (error) {
+      throw new GoalServiceError2("Failed to fetch goal analytics", error);
+    }
+  }
+}
+const loader$7 = async ({ request }) => {
+  try {
+    console.log("Goal tracking loader: Starting to fetch user session");
+    const { authToken, sessionToken, userId } = await requireUserSession(request);
+    console.log("Goal tracking loader: User session retrieved", {
+      hasAuthToken: !!authToken,
+      hasSessionToken: !!sessionToken,
+      hasUserId: !!userId
+    });
+    const session = await getSession(request);
+    const userIdFromSession = userId || session.get("userId");
+    console.log("User ID for API call:", userIdFromSession);
+    if (!userIdFromSession) {
+      console.error("No user ID found in session");
+      return json$1({ goals: [], error: "User ID not found" });
+    }
+    const goals = await GoalService2.getGoals(
+      { userId: userIdFromSession },
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "x-session-token": sessionToken
+        }
+      }
+    );
+    return json$1({ goals });
+  } catch (error) {
+    console.error("Error loading goals:", error);
+    console.log("Error type:", typeof error);
+    console.log("Error properties:", Object.keys(error || {}));
+    console.log("Error stringified:", JSON.stringify(error, null, 2));
+    if (error && error.originalError) {
+      const originalError = error.originalError;
+      console.log("Original error:", originalError);
+      console.log("Original error message:", originalError.message);
+      if (originalError.message && originalError.message.includes('relation "goals" does not exist')) {
+        console.log(
+          "Detected database relation error - goals table does not exist"
+        );
+        return json$1({
+          goals: [],
+          error: "The goals feature is not yet available. Please check back later."
+        });
+      }
+    }
+    return json$1({
+      goals: [],
+      error: "Failed to load goals. Please try again later."
+    });
+  }
+};
+async function action$8({ request }) {
+  const formData = await request.formData();
+  const _action = formData.get("_action");
+  const goalId = formData.get("goalId");
+  if (!goalId) {
+    return json$1({ error: "Goal ID is required" }, { status: 400 });
+  }
+  try {
+    const { userId } = await requireUserSession(request);
+    const session = await getSession(request);
+    const userIdFromSession = userId || session.get("userId");
+    console.log("User ID for API call (action):", userIdFromSession);
+    if (!userIdFromSession) {
+      console.error("No user ID found in session");
+      return json$1({ error: "User ID not found" }, { status: 400 });
+    }
+    switch (_action) {
+      case "acceptGoal":
+        console.log("Processing acceptGoal action with ID:", goalId);
+        try {
+          const { authToken, sessionToken } = await requireUserSession(request);
+          const updatedGoal = await GoalService2.acceptGoal(goalId, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "x-session-token": sessionToken
+            }
+          });
+          console.log("Goal accepted successfully:", updatedGoal);
+          return json$1(
+            { goal: updatedGoal, success: true },
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+        } catch (error) {
+          console.error("Error accepting goal:", error);
+          return json$1(
+            { error: "Failed to accept goal" },
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+        }
+      case "completeGoal":
+        console.log("Processing completeGoal action with ID:", goalId);
+        try {
+          const { authToken, sessionToken } = await requireUserSession(request);
+          const updatedGoal = await GoalService2.completeGoal(goalId, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "x-session-token": sessionToken
+            }
+          });
+          console.log("Goal completed successfully:", updatedGoal);
+          return json$1(
+            { goal: updatedGoal, success: true },
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+        } catch (error) {
+          console.error("Error completing goal:", error);
+          return json$1(
+            { error: "Failed to complete goal" },
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+        }
+      case "deleteGoal":
+        console.log("Processing deleteGoal action with ID:", goalId);
+        try {
+          const { authToken, sessionToken } = await requireUserSession(request);
+          await GoalService2.deleteGoal(goalId, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "x-session-token": sessionToken
+            }
+          });
+          console.log("Goal deleted successfully:", goalId);
+          return json$1(
+            { success: true, goalId },
+            {
+              headers: {
+                "Content-Type": "application/json"
+              },
+              status: 200
+              // Explicitly set 200 status code
+            }
+          );
+        } catch (error) {
+          console.error("Error deleting goal:", error);
+          return json$1(
+            { error: "Failed to delete goal", success: false },
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+        }
+      default:
+        return json$1({ error: "Invalid action" }, { status: 400 });
+    }
+  } catch (error) {
+    console.error(`Error performing ${_action}:`, error);
+    return json$1(
+      { error: `Failed to perform ${_action}`, success: false },
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+  }
+}
+function GoalTracking() {
+  const { goals, error } = useLoaderData();
+  const actionData = useActionData();
+  return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsxs("div", { className: "container max-w-4xl mx-auto p-4 pt-2 space-y-3", children: [
+    /* @__PURE__ */ jsx("h1", { className: "text-3xl font-bold mb-1", children: "Goal Tracking" }),
+    /* @__PURE__ */ jsx("p", { className: "text-gray-600", children: "Track your personalized growth goals generated from your journal entries." }),
+    error && /* @__PURE__ */ jsx("div", { className: "bg-amber-50 border-l-4 border-amber-400 p-4 mb-4", children: /* @__PURE__ */ jsxs("div", { className: "flex", children: [
+      /* @__PURE__ */ jsx("div", { className: "flex-shrink-0", children: /* @__PURE__ */ jsx(
+        "svg",
+        {
+          className: "h-5 w-5 text-amber-400",
+          viewBox: "0 0 20 20",
+          fill: "currentColor",
+          children: /* @__PURE__ */ jsx(
+            "path",
+            {
+              fillRule: "evenodd",
+              d: "M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z",
+              clipRule: "evenodd"
+            }
+          )
+        }
+      ) }),
+      /* @__PURE__ */ jsx("div", { className: "ml-3", children: /* @__PURE__ */ jsx("p", { className: "text-sm text-amber-700", children: error }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(GoalDashboard, { initialGoals: goals, actionData })
+  ] }) });
+}
+const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: GoalTracking
+  action: action$8,
+  default: GoalTracking,
+  loader: loader$7
 }, Symbol.toStringTag, { value: "Module" }));
 function HabitBuilder() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Habit Builder" }) }) });
 }
-const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route6 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: HabitBuilder
 }, Symbol.toStringTag, { value: "Module" }));
 function LearningPath() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Learning Path" }) }) });
 }
-const route5 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route7 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: LearningPath
 }, Symbol.toStringTag, { value: "Module" }));
-async function action$6({ request }) {
+async function action$7({ request }) {
   return logout(request);
 }
-async function loader$4() {
+async function loader$6() {
   return redirect("/login");
 }
-const route6 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route8 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action: action$6,
-  loader: loader$4
+  action: action$7,
+  loader: loader$6
 }, Symbol.toStringTag, { value: "Module" }));
 function ActionItems() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Action Items" }) }) });
 }
-const route7 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route9 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: ActionItems
 }, Symbol.toStringTag, { value: "Module" }));
-async function action$5({ request }) {
+async function action$6({ request }) {
   const { authToken, sessionToken } = await requireUserSession(request);
   const formData = await request.formData();
   const name = formData.get("name");
@@ -2418,83 +4260,148 @@ async function action$5({ request }) {
     return new Response("Failed to create journal", { status: 500 });
   }
 }
-const route8 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route10 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  action: action$5
+  action: action$6
 }, Symbol.toStringTag, { value: "Module" }));
-const Textarea = React.forwardRef(
-  ({ className, ...props }, ref) => {
-    return /* @__PURE__ */ jsx(
-      "textarea",
-      {
-        className: cn(
-          "flex min-h-[80px] w-full rounded-base border-2 text-text dark:text-darkText font-base selection:bg-main selection:text-black border-border dark:border-darkBorder bg-white dark:bg-secondaryBlack px-3 py-2 text-sm ring-offset-white placeholder:text-black/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        ),
-        ref,
-        ...props
+async function loader$5({ request }) {
+  const session = await getSession(request);
+  const authToken = session.get("authToken");
+  const sessionToken = session.get("sessionToken");
+  if (authToken && sessionToken) {
+    return redirect("/");
+  }
+  return json$1({});
+}
+async function action$5({ request }) {
+  var _a, _b;
+  const formData = await request.formData();
+  const email = (_a = formData.get("email")) == null ? void 0 : _a.toString();
+  const password = (_b = formData.get("password")) == null ? void 0 : _b.toString();
+  const errors = {};
+  if (!email) errors.email = "Email is required";
+  if (!password) errors.password = "Password is required";
+  if (Object.keys(errors).length > 0 || !email || !password) {
+    return json$1({ errors }, { status: 400 });
+  }
+  try {
+    const response = await AuthService.login({
+      email,
+      password
+    });
+    const cookie = await setAuthTokens(
+      request,
+      response.token,
+      response.sessionToken,
+      response.user.id
+    );
+    return redirect("/journal/new", {
+      headers: {
+        "Set-Cookie": cookie
       }
+    });
+  } catch (error) {
+    return json$1(
+      { errors: { _form: "Invalid email or password" } },
+      { status: 401 }
     );
   }
-);
-Textarea.displayName = "Textarea";
-const alertVariants = cva(
-  "relative w-full rounded-base shadow-light dark:shadow-dark font-bold border-2 border-border dark:border-darkBorder p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-black",
-  {
-    variants: {
-      variant: {
-        default: "bg-main dark:bg-main-700 text-black dark:text-white",
-        destructive: "bg-black text-white"
-      }
-    },
-    defaultVariants: {
-      variant: "default"
-    }
-  }
-);
-const Alert = React.forwardRef(({ className, variant, ...props }, ref) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    ref,
-    role: "alert",
-    className: cn(alertVariants({ variant }), className),
-    ...props
-  }
-));
-Alert.displayName = "Alert";
-const AlertTitle = React.forwardRef(({ className, ...props }, ref) => (
-  // eslint-disable-next-line jsx-a11y/heading-has-content
-  /* @__PURE__ */ jsx(
-    "h5",
-    {
-      ref,
-      className: cn("mb-1 leading-none tracking-tight", className),
-      ...props
-    }
-  )
-));
-AlertTitle.displayName = "AlertTitle";
-const AlertDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    ref,
-    className: cn("text-sm font-base [&_p]:leading-relaxed", className),
-    ...props
-  }
-));
-AlertDescription.displayName = "AlertDescription";
-const loader$3 = async ({ request }) => {
-  var _a;
+}
+function LoginPage() {
+  var _a, _b, _c;
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const [searchParams] = useSearchParams();
+  const isSubmitting = navigation.state === "submitting";
+  const errorMessage = searchParams.get("error");
+  return /* @__PURE__ */ jsx("div", { className: "container flex h-screen w-screen flex-col items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2 text-center", children: [
+      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-semibold tracking-tight text-text dark:text-darkText", children: "Welcome back" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-text dark:text-darkText", children: "Enter your email to sign in to your account" })
+    ] }),
+    errorMessage && /* @__PURE__ */ jsx("div", { className: "rounded-md bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/10 dark:text-red-400", children: errorMessage }),
+    /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "space-y-4", children: [
+      /* @__PURE__ */ jsxs(FormField, { children: [
+        /* @__PURE__ */ jsx(FormLabel, { htmlFor: "email", className: "text-text dark:text-darkText", children: "Email" }),
+        /* @__PURE__ */ jsx(
+          Input,
+          {
+            id: "email",
+            type: "email",
+            name: "email",
+            placeholder: "name@example.com",
+            className: "bg-white dark:bg-secondaryBlack text-text dark:text-darkText border-2 border-border dark:border-darkBorder",
+            required: true
+          }
+        ),
+        ((_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.email) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors.email })
+      ] }),
+      /* @__PURE__ */ jsxs(FormField, { children: [
+        /* @__PURE__ */ jsx(
+          FormLabel,
+          {
+            htmlFor: "password",
+            className: "text-text dark:text-darkText",
+            children: "Password"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Input,
+          {
+            id: "password",
+            type: "password",
+            name: "password",
+            className: "bg-white dark:bg-secondaryBlack text-text dark:text-darkText border-2 border-border dark:border-darkBorder",
+            required: true
+          }
+        ),
+        ((_b = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _b.password) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors.password })
+      ] }),
+      ((_c = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _c._form) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors._form }),
+      /* @__PURE__ */ jsx(Button, { type: "submit", className: "w-full", disabled: isSubmitting, children: isSubmitting ? "Signing in..." : "Sign in" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "text-center text-sm text-text dark:text-darkText", children: [
+      "Don't have an account?",
+      " ",
+      /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/register",
+          className: "underline hover:text-gray-800 dark:hover:text-gray-200",
+          children: "Sign up"
+        }
+      )
+    ] })
+  ] }) });
+}
+const route11 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  action: action$5,
+  default: LoginPage,
+  loader: loader$5
+}, Symbol.toStringTag, { value: "Module" }));
+const loader$4 = async ({ request }) => {
   const { authToken, sessionToken } = await requireUserSession(request);
-  const response = await JournalService.getJournals({
+  const journals = await JournalService.getJournals({
     headers: {
       Authorization: `Bearer ${authToken}`,
       "x-session-token": sessionToken
     }
   });
+  const selectedJournalId = await getSelectedJournalId(request);
+  let entries = [];
+  if (selectedJournalId) {
+    entries = await JournalService.getEntries(selectedJournalId, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "x-session-token": sessionToken
+      }
+    });
+  }
   return json$1({
-    selectedJournalId: ((_a = response[0]) == null ? void 0 : _a.id) || "",
-    journals: response
+    journals,
+    entries,
+    selectedJournalId
   });
 };
 async function action$4({ request }) {
@@ -2502,9 +4409,16 @@ async function action$4({ request }) {
   const formData = await request.formData();
   const journalId = formData.get("journalId");
   const content = formData.get("content");
+  console.log("Content: ", content);
   if (!content || typeof content !== "string" || !content.trim()) {
     return json$1(
       { error: "Please write something before saving" },
+      { status: 400 }
+    );
+  }
+  if (!journalId) {
+    return json$1(
+      { error: "Please select a journal before saving" },
       { status: 400 }
     );
   }
@@ -2526,186 +4440,281 @@ async function action$4({ request }) {
     );
   }
 }
-const TherapeuticJournalEntry = () => {
-  const [showPrompt, setShowPrompt] = useState(true);
-  const actionData = useActionData();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
-  const { selectedJournalId } = useLoaderData();
-  const growthPrompts = [
-    "What new skill or knowledge did you work on today, and what did you learn from the experience?",
-    "Describe a challenge you faced today. What opportunities for growth do you see in it?",
-    "What's something you initially found difficult but are getting better at? How can you see your progress?",
-    "What would you like to improve or master next? What small step can you take toward that goal?",
-    "How did you push outside your comfort zone today, and what did that teach you?"
+const meta$1 = () => {
+  return [
+    { title: "Today's Journal Entry" },
+    {
+      name: "description",
+      content: "Record your thoughts, feelings, and experiences for today"
+    }
   ];
-  const [selectedPrompt] = useState(
-    growthPrompts[Math.floor(Math.random() * growthPrompts.length)]
-    // Grab a random prompt
-  );
-  return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsxs("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: [
-    /* @__PURE__ */ jsx("h3", { className: "text-xl font-heading dark:text-white text-text", children: "Today's Entry" }),
-    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm dark:text-gray-500 text-gray-700", children: [
-      /* @__PURE__ */ jsx(Calendar, { className: "w-4 h-4" }),
-      /* @__PURE__ */ jsx("span", { children: (/* @__PURE__ */ new Date()).toLocaleDateString() }),
-      /* @__PURE__ */ jsx(Clock, { className: "w-4 h-4 ml-2" }),
-      /* @__PURE__ */ jsx("span", { children: (/* @__PURE__ */ new Date()).toLocaleTimeString() })
-    ] }),
-    showPrompt && /* @__PURE__ */ jsxs(Alert, { className: "p-4 rounded-lg mb-4 flex items-start gap-3", children: [
-      /* @__PURE__ */ jsx(Sparkles, { className: "w-5 h-5 flex-shrink-0 mt-1" }),
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx("h3", { className: "font-medium text-black dark:text-white mb-1", children: "Today's Prompt" }),
-        /* @__PURE__ */ jsx("p", { className: "text-black dark:text-white", children: selectedPrompt })
-      ] }),
-      /* @__PURE__ */ jsx(
-        "button",
-        {
-          onClick: () => setShowPrompt(false),
-          className: "ml-auto text-black dark:text-white hover:text-gray-800 dark:hover:text-gray-200",
-          children: /* @__PURE__ */ jsx(ChevronDown, { className: "w-5 h-5" })
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "space-y-4", children: [
-      /* @__PURE__ */ jsx("input", { type: "hidden", name: "journalId", value: selectedJournalId }),
-      /* @__PURE__ */ jsx(
-        Textarea,
-        {
-          name: "content",
-          className: "w-full h-64 p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400 placeholder:italic",
-          placeholder: "Write your thoughts here..."
-        }
-      ),
-      (actionData == null ? void 0 : actionData.error) && /* @__PURE__ */ jsx(Alert, { variant: "destructive", className: "mt-2", children: actionData.error }),
-      /* @__PURE__ */ jsx("div", { className: "flex justify-between items-center", children: /* @__PURE__ */ jsxs(
-        Button,
-        {
-          type: "submit",
-          variant: "noShadow",
-          className: "ml-auto flex items-center gap-2 px-4 py-2 text-black dark:text-white",
-          disabled: isSubmitting,
-          children: [
-            isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "w-4 h-4 animate-spin" }) : /* @__PURE__ */ jsx(Save, { className: "w-4 h-4" }),
-            /* @__PURE__ */ jsx("span", { children: isSubmitting ? "Saving..." : "Save Entry" })
-          ]
-        }
-      ) })
-    ] })
-  ] }) });
 };
-const route9 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+function ErrorBoundary() {
+  return /* @__PURE__ */ jsxs("div", { className: "p-4 text-red-500 bg-red-50 rounded-lg", children: [
+    /* @__PURE__ */ jsx("h1", { className: "text-xl font-bold", children: "Something went wrong" }),
+    /* @__PURE__ */ jsx("p", { children: "There was an error loading or saving your journal entry. Please try again later." })
+  ] });
+}
+const TherapeuticJournalEntry = () => {
+  const [content, setContent] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const navigate = useNavigate();
+  const { selectedJournalId } = useOutletContext();
+  const { entries } = useLoaderData();
+  const fetcher = useFetcher();
+  const isSubmitting = fetcher.state === "submitting";
+  useEffect(() => {
+    if (fetcher.state === "idle" && "success" in (fetcher.data || {})) {
+      setShowSuccess(true);
+      setIsMounted(true);
+      setContent("");
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 3e3);
+      return () => clearTimeout(timer);
+    }
+  }, [fetcher.state, fetcher.data]);
+  useEffect(() => {
+    let unmountTimer;
+    if (!showSuccess && isMounted) {
+      unmountTimer = window.setTimeout(() => {
+        setIsMounted(false);
+      }, 500);
+    }
+    return () => {
+      if (unmountTimer) window.clearTimeout(unmountTimer);
+    };
+  }, [showSuccess, isMounted]);
+  const sortedEntries = [...entries].sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime();
+  });
+  return /* @__PURE__ */ jsxs(MainLayout, { children: [
+    /* @__PURE__ */ jsxs("div", { className: "container max-w-4xl mx-auto p-4 pt-2 space-y-3 animate-fade-in", children: [
+      /* @__PURE__ */ jsx("h1", { className: "text-3xl font-bold mb-1", children: "Today's Journal Entry" }),
+      /* @__PURE__ */ jsx("p", { className: "text-gray-600 dark:text-gray-400", children: "Record your thoughts, feelings, and experiences for today." }),
+      /* @__PURE__ */ jsxs(fetcher.Form, { method: "post", className: "flex-1 flex flex-col", children: [
+        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 md:grid-cols-2 gap-4 mb-6", children: [
+          /* @__PURE__ */ jsxs("div", { className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700 rounded-lg p-4", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Date" }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 text-xl font-bold text-black dark:text-white", children: [
+              /* @__PURE__ */ jsx(Calendar, { className: "w-4 h-4 text-blue-600 dark:text-blue-400" }),
+              /* @__PURE__ */ jsx("span", { children: (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+              }) })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "animate-fade-in bg-white dark:bg-gray-800 border-2 dark:border-gray-700 rounded-lg p-4",
+              style: { animationDelay: "0.1s" },
+              children: [
+                /* @__PURE__ */ jsx("p", { className: "text-sm text-black/70 dark:text-white/90 font-medium", children: "Time" }),
+                /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 text-xl font-bold text-black dark:text-white", children: [
+                  /* @__PURE__ */ jsx(Clock, { className: "w-4 h-4 text-blue-600 dark:text-blue-400" }),
+                  /* @__PURE__ */ jsx("span", { children: (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  }) })
+                ] })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx(
+          "input",
+          {
+            type: "hidden",
+            name: "journalId",
+            value: selectedJournalId || ""
+          }
+        ),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name: "content", value: content }),
+        /* @__PURE__ */ jsx("div", { className: "flex-1 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden", children: /* @__PURE__ */ jsx(Editor, { onChange: setContent, initialContent: content }) }),
+        isMounted && /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: `bg-green-100 dark:bg-green-900/70 border-2 border-green-600 dark:border-green-400 p-4 rounded-base shadow-md mt-4 mb-4 flex items-center gap-3 ${showSuccess ? "animate-in fade-in" : "animate-out fade-out duration-500"}`,
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "flex-shrink-0", children: /* @__PURE__ */ jsx(
+                "svg",
+                {
+                  className: "h-5 w-5 text-green-700 dark:text-green-300",
+                  viewBox: "0 0 20 20",
+                  fill: "currentColor",
+                  children: /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      fillRule: "evenodd",
+                      d: "M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z",
+                      clipRule: "evenodd"
+                    }
+                  )
+                }
+              ) }),
+              /* @__PURE__ */ jsx("div", { className: "ml-3", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-green-800 dark:text-green-200", children: "Journal entry saved successfully!" }) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "flex justify-end mt-6", children: /* @__PURE__ */ jsxs(
+          Button,
+          {
+            type: "submit",
+            variant: "default",
+            className: "px-8 py-2 text-base bg-green-600 hover:bg-green-700 text-white font-medium",
+            disabled: isSubmitting || !(content == null ? void 0 : content.trim()),
+            "aria-label": "Save journal entry",
+            "aria-busy": isSubmitting,
+            children: [
+              isSubmitting ? /* @__PURE__ */ jsx(
+                Loader2,
+                {
+                  className: "w-5 h-5 animate-spin mr-2",
+                  "aria-hidden": "true"
+                }
+              ) : /* @__PURE__ */ jsx(Save, { className: "w-5 h-5 mr-2", "aria-hidden": "true" }),
+              "Save Entry"
+            ]
+          }
+        ) })
+      ] })
+    ] }),
+    !isSidebarOpen && /* @__PURE__ */ jsx(
+      "button",
+      {
+        onClick: () => setIsSidebarOpen(true),
+        className: "fixed right-4 top-20 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-105 z-20",
+        "aria-label": "Show entry history",
+        children: /* @__PURE__ */ jsx(History, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: `fixed top-0 right-0 h-screen z-50 transition-all duration-300 bg-white dark:bg-gray-800 border-l dark:border-gray-700 shadow-lg ${isSidebarOpen ? "w-80 md:w-96" : "w-0 overflow-hidden"}`,
+        style: { marginTop: "60px" },
+        children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => setIsSidebarOpen(!isSidebarOpen),
+              className: "absolute -left-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors",
+              "aria-label": isSidebarOpen ? "Collapse sidebar" : "Expand sidebar",
+              children: isSidebarOpen ? /* @__PURE__ */ jsx(ChevronRight, { className: "w-4 h-4 text-black dark:text-white" }) : /* @__PURE__ */ jsx(ChevronLeft, { className: "w-4 h-4 text-black dark:text-white" })
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "p-4 text-black dark:text-white", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-6", children: [
+              /* @__PURE__ */ jsxs("h2", { className: "text-2xl font-heading text-black dark:text-white flex items-center", children: [
+                /* @__PURE__ */ jsx(History, { className: "w-5 h-5 mr-2" }),
+                "Recent Entries"
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "text-sm bg-main-100 dark:bg-main-900/70 text-black dark:text-white px-2 py-1 rounded-base font-medium border-2 border-border dark:border-main-600", children: [
+                sortedEntries.length,
+                " ",
+                sortedEntries.length === 1 ? "entry" : "entries"
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "overflow-y-auto max-h-[calc(100vh-12rem)] pr-2", children: sortedEntries.length === 0 ? /* @__PURE__ */ jsxs("div", { className: "text-center py-8 text-black/70 dark:text-white/70", children: [
+              /* @__PURE__ */ jsx("div", { className: "mb-2", children: "No entries yet" }),
+              /* @__PURE__ */ jsx("div", { className: "text-sm", children: "Start journaling to see your entries here" })
+            ] }) : sortedEntries.map((entry2) => {
+              const entryDate = new Date(entry2.createdAt);
+              const today = /* @__PURE__ */ new Date();
+              const yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+              let dateDisplay;
+              if (entryDate.toDateString() === today.toDateString()) {
+                dateDisplay = "Today";
+              } else if (entryDate.toDateString() === yesterday.toDateString()) {
+                dateDisplay = "Yesterday";
+              } else {
+                dateDisplay = entryDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                });
+              }
+              const previewText = entry2.content.replace(/<[^>]*>/g, "");
+              return /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  onClick: () => navigate(`/journal/edit/${entry2.id}`),
+                  className: "cursor-pointer bg-white dark:bg-gray-800 rounded-lg p-2.5 hover:bg-accent/10 border-2 border-gray-200 dark:border-gray-700 mb-2 transition-colors goal-list-item",
+                  children: [
+                    /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-1", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "text-sm font-medium flex items-center", children: [
+                        /* @__PURE__ */ jsx(Calendar, { className: "w-3 h-3 mr-1 text-primary" }),
+                        dateDisplay,
+                        /* @__PURE__ */ jsx("span", { className: "mx-1 text-black/50 dark:text-white/50", children: "·" }),
+                        /* @__PURE__ */ jsx("span", { className: "text-xs text-black/70 dark:text-white/70", children: entryDate.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        }) })
+                      ] }),
+                      /* @__PURE__ */ jsx(ChevronRight, { className: "w-3 h-3 text-black/60 dark:text-white/60" })
+                    ] }),
+                    /* @__PURE__ */ jsx("div", { className: "text-xs line-clamp-2 text-black/70 dark:text-white/70", children: previewText || "<Empty entry>" })
+                  ]
+                },
+                entry2.id
+              );
+            }) })
+          ] })
+        ]
+      }
+    )
+  ] });
+};
+const route12 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  ErrorBoundary,
   action: action$4,
   default: TherapeuticJournalEntry,
-  loader: loader$3
+  loader: loader$4,
+  meta: meta$1
 }, Symbol.toStringTag, { value: "Module" }));
-async function loader$2({ request }) {
-  const session = await getSession(request);
-  const authToken = session.get("authToken");
-  const sessionToken = session.get("sessionToken");
-  if (authToken && sessionToken) {
-    return redirect("/");
-  }
-  return json$1({});
-}
-async function action$3({ request }) {
-  var _a, _b;
+const loader$3 = async () => {
+  return json$1({ success: true });
+};
+const action$3 = async ({ request }) => {
   const formData = await request.formData();
-  const email = (_a = formData.get("email")) == null ? void 0 : _a.toString();
-  const password = (_b = formData.get("password")) == null ? void 0 : _b.toString();
-  const errors = {};
-  if (!email) errors.email = "Email is required";
-  if (!password) errors.password = "Password is required";
-  if (Object.keys(errors).length > 0 || !email || !password) {
-    return json$1({ errors }, { status: 400 });
+  const journalId = formData.get("journalId");
+  const action2 = formData.get("_action");
+  if (action2 !== "setJournal" || !journalId || typeof journalId !== "string") {
+    return json$1({ success: false }, { status: 400 });
   }
-  try {
-    const response = await AuthService.login({
-      email,
-      password
-    });
-    const cookie = await setAuthTokens(
-      request,
-      response.token,
-      response.sessionToken
-    );
-    return redirect("/dashboard", {
+  return json$1(
+    { success: true },
+    {
       headers: {
-        "Set-Cookie": cookie
+        "Set-Cookie": await setSelectedJournalId(journalId)
       }
-    });
-  } catch (error) {
-    return json$1(
-      { errors: { _form: "Invalid email or password" } },
-      { status: 401 }
-    );
-  }
-}
-function LoginPage() {
-  var _a, _b, _c;
-  const actionData = useActionData();
-  return /* @__PURE__ */ jsx("div", { className: "container flex h-screen w-screen flex-col items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col space-y-2 text-center", children: [
-      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-semibold tracking-tight dark:text-white text-text", children: "Welcome back" }),
-      /* @__PURE__ */ jsx("p", { className: "text-sm dark:text-white text-text", children: "Enter your email to sign in to your account" })
-    ] }),
-    /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "space-y-4", children: [
-      /* @__PURE__ */ jsxs(FormField, { children: [
-        /* @__PURE__ */ jsx(FormLabel, { htmlFor: "email", className: "dark:text-white text-text", children: "Email" }),
-        /* @__PURE__ */ jsx(
-          Input,
-          {
-            id: "email",
-            type: "email",
-            name: "email",
-            placeholder: "name@example.com",
-            className: "bg-white",
-            required: true
-          }
-        ),
-        ((_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.email) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors.email })
-      ] }),
-      /* @__PURE__ */ jsxs(FormField, { children: [
-        /* @__PURE__ */ jsx(FormLabel, { htmlFor: "password", className: "dark:text-white text-text", children: "Password" }),
-        /* @__PURE__ */ jsx(
-          Input,
-          {
-            id: "password",
-            type: "password",
-            name: "password",
-            className: "bg-white",
-            required: true
-          }
-        ),
-        ((_b = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _b.password) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors.password })
-      ] }),
-      ((_c = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _c._form) && /* @__PURE__ */ jsx(FormMessage, { children: actionData.errors._form }),
-      /* @__PURE__ */ jsx(Button, { type: "submit", className: "w-full", children: "Sign In" })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "text-center text-sm dark:text-white text-text", children: [
-      "Don't have an account?",
-      " ",
-      /* @__PURE__ */ jsx(Link, { to: "/register", className: "underline hover:text-gray-800", children: "Sign up" })
-    ] })
-  ] }) });
-}
-const route10 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+    }
+  );
+};
+const route13 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   action: action$3,
-  default: LoginPage,
-  loader: loader$2
+  loader: loader$3
 }, Symbol.toStringTag, { value: "Module" }));
 function Milestones() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Milestone Tracker" }) }) });
 }
-const route11 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route14 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Milestones
 }, Symbol.toStringTag, { value: "Module" }));
 function DashboardLayout() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx(Outlet, {}) });
 }
-const route12 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route15 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: DashboardLayout
 }, Symbol.toStringTag, { value: "Module" }));
@@ -2724,11 +4733,11 @@ const action$2 = async ({ request }) => {
     }
   );
 };
-const route13 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route16 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   action: action$2
 }, Symbol.toStringTag, { value: "Module" }));
-async function loader$1({ request }) {
+async function loader$2({ request }) {
   try {
     const userInfo = await UserInfoService.getUserInfo(request);
     return json$1(
@@ -2769,15 +4778,15 @@ async function action$1({ request }) {
     return json$1({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }
-const route14 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route17 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   action: action$1,
-  loader: loader$1
+  loader: loader$2
 }, Symbol.toStringTag, { value: "Module" }));
 function Progress() {
   return /* @__PURE__ */ jsx(MainLayout, { children: /* @__PURE__ */ jsx("div", { className: "container max-w-4xl mx-auto p-6 space-y-6", children: /* @__PURE__ */ jsx("h1", { children: "Progress" }) }) });
 }
-const route15 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route18 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Progress
 }, Symbol.toStringTag, { value: "Module" }));
@@ -2791,7 +4800,7 @@ async function requireAuth(request) {
   const authToken = await getAuthToken(request);
   const sessionToken = await getSessionToken(request);
   if (!authToken || !sessionToken) {
-    throw redirect("/login");
+    throw redirect("/login?error=Please log in to continue");
   }
   try {
     await Promise.all([
@@ -2800,10 +4809,11 @@ async function requireAuth(request) {
     ]);
     return { authToken, sessionToken };
   } catch (error) {
-    throw redirect("/login");
+    const message = error instanceof AuthenticationError ? error.message : "Your session has expired. Please log in again.";
+    throw redirect(`/login?error=${encodeURIComponent(message)}`);
   }
 }
-async function loader({ request }) {
+async function loader$1({ request }) {
   requireAuth(request);
   return json$1({});
 }
@@ -2819,10 +4829,10 @@ const meta = () => {
 function Index() {
   return /* @__PURE__ */ jsx(Article, {});
 }
-const route16 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route19 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader,
+  loader: loader$1,
   meta
 }, Symbol.toStringTag, { value: "Module" }));
 function AuthLayout() {
@@ -2838,12 +4848,16 @@ function AuthLayout() {
     ) })
   ] });
 }
-const route17 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route20 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: AuthLayout
 }, Symbol.toStringTag, { value: "Module" }));
 const ChatClientError = void 0;
 const ChatClient = void 0;
+const loader = async ({ request }) => {
+  await requireUserSession(request);
+  return null;
+};
 async function action({ request }) {
   const formData = await request.formData();
   const message = formData.get("message");
@@ -2858,9 +4872,11 @@ async function action({ request }) {
 function Chat() {
   const formRef = useRef(null);
   const chatEndRef = useRef(null);
+  const assistantMessageIdRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const { userInfo } = useUserInfo();
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -2868,15 +4884,52 @@ function Chat() {
     const content = formData.get("message");
     if (!content.trim()) return;
     const tempId = `temp-${Date.now()}`;
-    const optimisticMessage = {
+    const newMessage = {
       id: tempId,
       role: "user",
       content,
       status: "sending"
     };
-    setMessages((prev) => [...prev, optimisticMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     try {
-      const response = await ChatClient.sendMessage(content);
+      if (!userInfo) {
+        throw new Error("User must be logged in to send messages");
+      }
+      const messageHistory = [
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
+        { role: "user", content }
+      ];
+      const assistantMessageId = window.crypto.randomUUID();
+      assistantMessageIdRef.current = assistantMessageId;
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: assistantMessageId,
+          role: "assistant",
+          content: "",
+          status: "streaming",
+          isPartial: true
+        }
+      ]);
+      const response = await ChatClient.sendMessage(
+        messageHistory,
+        userInfo.id
+      );
+      setMessages((currentMessages) => {
+        const updatedMessages = [...currentMessages];
+        const streamingMessageIndex = updatedMessages.findIndex(
+          (m) => m.id === assistantMessageId
+        );
+        if (streamingMessageIndex !== -1) {
+          updatedMessages[streamingMessageIndex] = {
+            ...updatedMessages[streamingMessageIndex],
+            content: response.message,
+            status: void 0,
+            isPartial: false
+          };
+        }
+        return updatedMessages;
+      });
       setMessages((currentMessages) => {
         const updatedMessages = [...currentMessages];
         const pendingMessageIndex = updatedMessages.findIndex(
@@ -2888,11 +4941,6 @@ function Chat() {
             status: void 0
           };
         }
-        updatedMessages.push({
-          id: response.id,
-          role: "assistant",
-          content: response.message
-        });
         return updatedMessages;
       });
     } catch (err) {
@@ -2922,11 +4970,16 @@ function Chat() {
   }, [messages]);
   useEffect(() => {
     let mounted = true;
+    let reconnectTimeout;
     const initializeConnection = async () => {
       if (!mounted) return;
+      if (!userInfo) {
+        console.error("User information is not available.");
+        return;
+      }
       setIsConnecting(true);
       try {
-        await ChatClient.sendMessage("");
+        await ChatClient.sendMessage([], userInfo.id);
         if (mounted) {
           setIsConnecting(false);
           setError(null);
@@ -2936,12 +4989,41 @@ function Chat() {
           console.error("Failed to initialize chat connection:", error2);
           setError("Failed to connect to chat server");
           setIsConnecting(false);
+          reconnectTimeout = setTimeout(() => {
+            if (mounted) {
+              initializeConnection();
+            }
+          }, 5e3);
         }
       }
     };
-    initializeConnection();
+    if (userInfo) {
+      initializeConnection();
+    }
+    ChatClient.onStreamMessage((chunk) => {
+      if (assistantMessageIdRef.current) {
+        setMessages((currentMessages) => {
+          const updatedMessages = [...currentMessages];
+          const streamingMessageIndex = updatedMessages.findIndex(
+            (m) => m.id === assistantMessageIdRef.current
+          );
+          if (streamingMessageIndex !== -1) {
+            updatedMessages[streamingMessageIndex] = {
+              ...updatedMessages[streamingMessageIndex],
+              content: updatedMessages[streamingMessageIndex].content + chunk,
+              status: "receiving"
+            };
+          }
+          return updatedMessages;
+        });
+      }
+    });
     return () => {
       mounted = false;
+      clearTimeout(reconnectTimeout);
+      console.log(
+        "Chat component unmounting, cleaning up WebSocket connection"
+      );
       ChatClient.cleanup();
     };
   }, []);
@@ -2953,13 +5035,16 @@ function Chat() {
         {
           className: cn(
             "p-4 rounded-base border-2 border-border dark:border-darkBorder max-w-3xl",
-            message.role === "user" ? "bg-white dark:bg-secondaryBlack ml-auto text-right" : "bg-main mr-auto",
+            message.role === "user" ? "bg-white dark:bg-secondaryBlack ml-auto text-right" : "bg-main dark:bg-[#1e1e2d] mr-auto",
             message.status === "sending" && "opacity-70",
+            message.status === "streaming" && "animate-pulse",
             message.status === "error" && "border-red-500"
           ),
           children: /* @__PURE__ */ jsxs("div", { className: "prose dark:prose-invert max-w-none", children: [
-            /* @__PURE__ */ jsx(ReactMarkdown, { children: message.content }),
+            /* @__PURE__ */ jsx(ReactMarkdown, { children: message.content || " " }),
             message.status === "sending" && /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500 ml-2", children: "Sending..." }),
+            message.status === "streaming" && /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500 ml-2", children: "Thinking..." }),
+            message.status === "receiving" && /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500 ml-2", children: "▋" }),
             message.status === "error" && /* @__PURE__ */ jsx("span", { className: "text-sm text-red-500 ml-2", children: "Failed to send" })
           ] })
         },
@@ -2982,12 +5067,13 @@ function Chat() {
     ] })
   ] }) });
 }
-const route18 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const route21 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   action,
-  default: Chat
+  default: Chat,
+  loader
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-WtuvgT9m.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/components-Dq8-UIqM.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-D7u4_bNo.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/success-stories": { "id": "routes/success-stories", "parentId": "root", "path": "success-stories", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/success-stories-HHqJVThN.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/_auth.register": { "id": "routes/_auth.register", "parentId": "routes/_auth", "path": "register", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.register-D6laU4Qn.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/input-CkwIpSKd.js", "/assets/form-CWucc1c7.js", "/assets/components-Dq8-UIqM.js"], "css": [] }, "routes/goal-tracking": { "id": "routes/goal-tracking", "parentId": "root", "path": "goal-tracking", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/goal-tracking-UKQzLQbR.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/habit-builder": { "id": "routes/habit-builder", "parentId": "root", "path": "habit-builder", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/habit-builder-CARtA7Wo.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/learning-path": { "id": "routes/learning-path", "parentId": "root", "path": "learning-path", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/learning-path-BQCquk0w.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/_auth.logout": { "id": "routes/_auth.logout", "parentId": "routes/_auth", "path": "logout", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.logout-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/action-items": { "id": "routes/action-items", "parentId": "root", "path": "action-items", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/action-items-GnWjOcZa.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/journals.new": { "id": "routes/journals.new", "parentId": "root", "path": "journals/new", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/journals.new-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/todays-entry": { "id": "routes/todays-entry", "parentId": "root", "path": "todays-entry", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/todays-entry-Bja8HiEC.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/input-CkwIpSKd.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/_auth.login": { "id": "routes/_auth.login", "parentId": "routes/_auth", "path": "login", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.login-DRtyGe_f.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/input-CkwIpSKd.js", "/assets/form-CWucc1c7.js", "/assets/components-Dq8-UIqM.js"], "css": [] }, "routes/milestones": { "id": "routes/milestones", "parentId": "root", "path": "milestones", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/milestones-AxV8of9q.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/dashboard": { "id": "routes/dashboard", "parentId": "root", "path": "dashboard", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/dashboard-RPIN49oH.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/set-theme": { "id": "routes/set-theme", "parentId": "root", "path": "set-theme", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/set-theme-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/user-info": { "id": "routes/user-info", "parentId": "root", "path": "user-info", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/user-info-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/progress": { "id": "routes/progress", "parentId": "root", "path": "progress", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/progress-CJJ7OMd-.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/input-CkwIpSKd.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-BLAjJmfE.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/components-Dq8-UIqM.js"], "css": [] }, "routes/_auth": { "id": "routes/_auth", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth-VUe4C6wV.js", "imports": ["/assets/index-CTt_PmtF.js"], "css": [] }, "routes/chat": { "id": "routes/chat", "parentId": "root", "path": "chat", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/chat-BPxA8ZbT.js", "imports": ["/assets/index-CTt_PmtF.js", "/assets/input-CkwIpSKd.js", "/assets/MainLayout-DZY-cXE8.js", "/assets/components-Dq8-UIqM.js", "/assets/ThemeProvider-BQeXjIYU.js"], "css": [] } }, "url": "/assets/manifest-3faefbe9.js", "version": "3faefbe9" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-BqWox7G6.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/components-KL4jv2-v.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-DAyzTqxu.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js", "/assets/index-CEPzOyJo.js"], "css": [] }, "routes/api.goals.new-count": { "id": "routes/api.goals.new-count", "parentId": "root", "path": "api/goals/new-count", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/api.goals.new-count-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/journal.edit.$id": { "id": "routes/journal.edit.$id", "parentId": "root", "path": "journal/edit/:id", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/journal.edit._id-BGb3wgRa.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/input-BBr1Xs4l.js", "/assets/MainLayout-DQ_12iko.js", "/assets/index-CEPzOyJo.js", "/assets/RichTextEditor-DViyxfw7.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/success-stories": { "id": "routes/success-stories", "parentId": "root", "path": "success-stories", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/success-stories-CuUQqPrT.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/_auth.register": { "id": "routes/_auth.register", "parentId": "routes/_auth", "path": "register", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.register-DQATnGWn.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/input-BBr1Xs4l.js", "/assets/form-C2-LnGgV.js", "/assets/components-KL4jv2-v.js"], "css": [] }, "routes/goal-tracking": { "id": "routes/goal-tracking", "parentId": "root", "path": "goal-tracking", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/goal-tracking-DEMlVQA8.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": ["/assets/goal-animations-BOyywt_q.css"] }, "routes/habit-builder": { "id": "routes/habit-builder", "parentId": "root", "path": "habit-builder", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/habit-builder-CDKcSKIc.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/learning-path": { "id": "routes/learning-path", "parentId": "root", "path": "learning-path", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/learning-path-B7ZGW1U4.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/_auth.logout": { "id": "routes/_auth.logout", "parentId": "routes/_auth", "path": "logout", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.logout-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/action-items": { "id": "routes/action-items", "parentId": "root", "path": "action-items", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/action-items-D-0nG5O3.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/journals.new": { "id": "routes/journals.new", "parentId": "root", "path": "journals/new", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/journals.new-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/_auth.login": { "id": "routes/_auth.login", "parentId": "routes/_auth", "path": "login", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth.login-gWxwU-sn.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/input-BBr1Xs4l.js", "/assets/form-C2-LnGgV.js", "/assets/components-KL4jv2-v.js"], "css": [] }, "routes/journal.new": { "id": "routes/journal.new", "parentId": "root", "path": "journal/new", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": true, "module": "/assets/journal.new-DTNQdqj4.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/input-BBr1Xs4l.js", "/assets/MainLayout-DQ_12iko.js", "/assets/RichTextEditor-DViyxfw7.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": ["/assets/goal-animations-BOyywt_q.css"] }, "routes/set-journal": { "id": "routes/set-journal", "parentId": "root", "path": "set-journal", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/set-journal-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/milestones": { "id": "routes/milestones", "parentId": "root", "path": "milestones", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/milestones-B2tSsBVV.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/dashboard": { "id": "routes/dashboard", "parentId": "root", "path": "dashboard", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/dashboard-DDoPOTLx.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/set-theme": { "id": "routes/set-theme", "parentId": "root", "path": "set-theme", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/set-theme-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/user-info": { "id": "routes/user-info", "parentId": "root", "path": "user-info", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/user-info-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/progress": { "id": "routes/progress", "parentId": "root", "path": "progress", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/progress-ytBLgi4w.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/MainLayout-DQ_12iko.js", "/assets/input-BBr1Xs4l.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-D5ohzOc8.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/components-KL4jv2-v.js"], "css": [] }, "routes/_auth": { "id": "routes/_auth", "parentId": "root", "path": void 0, "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_auth-D5rrVyPz.js", "imports": ["/assets/index-bLHTLROY.js"], "css": [] }, "routes/chat": { "id": "routes/chat", "parentId": "root", "path": "chat", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/chat-DNbtIbCw.js", "imports": ["/assets/index-bLHTLROY.js", "/assets/input-BBr1Xs4l.js", "/assets/MainLayout-DQ_12iko.js", "/assets/components-KL4jv2-v.js", "/assets/ThemeProvider-DO1bxZY9.js"], "css": [] } }, "url": "/assets/manifest-4389b3d0.js", "version": "4389b3d0" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";
@@ -3004,13 +5090,29 @@ const routes = {
     caseSensitive: void 0,
     module: route0
   },
+  "routes/api.goals.new-count": {
+    id: "routes/api.goals.new-count",
+    parentId: "root",
+    path: "api/goals/new-count",
+    index: void 0,
+    caseSensitive: void 0,
+    module: route1
+  },
+  "routes/journal.edit.$id": {
+    id: "routes/journal.edit.$id",
+    parentId: "root",
+    path: "journal/edit/:id",
+    index: void 0,
+    caseSensitive: void 0,
+    module: route2
+  },
   "routes/success-stories": {
     id: "routes/success-stories",
     parentId: "root",
     path: "success-stories",
     index: void 0,
     caseSensitive: void 0,
-    module: route1
+    module: route3
   },
   "routes/_auth.register": {
     id: "routes/_auth.register",
@@ -3018,7 +5120,7 @@ const routes = {
     path: "register",
     index: void 0,
     caseSensitive: void 0,
-    module: route2
+    module: route4
   },
   "routes/goal-tracking": {
     id: "routes/goal-tracking",
@@ -3026,7 +5128,7 @@ const routes = {
     path: "goal-tracking",
     index: void 0,
     caseSensitive: void 0,
-    module: route3
+    module: route5
   },
   "routes/habit-builder": {
     id: "routes/habit-builder",
@@ -3034,7 +5136,7 @@ const routes = {
     path: "habit-builder",
     index: void 0,
     caseSensitive: void 0,
-    module: route4
+    module: route6
   },
   "routes/learning-path": {
     id: "routes/learning-path",
@@ -3042,7 +5144,7 @@ const routes = {
     path: "learning-path",
     index: void 0,
     caseSensitive: void 0,
-    module: route5
+    module: route7
   },
   "routes/_auth.logout": {
     id: "routes/_auth.logout",
@@ -3050,7 +5152,7 @@ const routes = {
     path: "logout",
     index: void 0,
     caseSensitive: void 0,
-    module: route6
+    module: route8
   },
   "routes/action-items": {
     id: "routes/action-items",
@@ -3058,7 +5160,7 @@ const routes = {
     path: "action-items",
     index: void 0,
     caseSensitive: void 0,
-    module: route7
+    module: route9
   },
   "routes/journals.new": {
     id: "routes/journals.new",
@@ -3066,15 +5168,7 @@ const routes = {
     path: "journals/new",
     index: void 0,
     caseSensitive: void 0,
-    module: route8
-  },
-  "routes/todays-entry": {
-    id: "routes/todays-entry",
-    parentId: "root",
-    path: "todays-entry",
-    index: void 0,
-    caseSensitive: void 0,
-    module: route9
+    module: route10
   },
   "routes/_auth.login": {
     id: "routes/_auth.login",
@@ -3082,7 +5176,23 @@ const routes = {
     path: "login",
     index: void 0,
     caseSensitive: void 0,
-    module: route10
+    module: route11
+  },
+  "routes/journal.new": {
+    id: "routes/journal.new",
+    parentId: "root",
+    path: "journal/new",
+    index: void 0,
+    caseSensitive: void 0,
+    module: route12
+  },
+  "routes/set-journal": {
+    id: "routes/set-journal",
+    parentId: "root",
+    path: "set-journal",
+    index: void 0,
+    caseSensitive: void 0,
+    module: route13
   },
   "routes/milestones": {
     id: "routes/milestones",
@@ -3090,7 +5200,7 @@ const routes = {
     path: "milestones",
     index: void 0,
     caseSensitive: void 0,
-    module: route11
+    module: route14
   },
   "routes/dashboard": {
     id: "routes/dashboard",
@@ -3098,7 +5208,7 @@ const routes = {
     path: "dashboard",
     index: void 0,
     caseSensitive: void 0,
-    module: route12
+    module: route15
   },
   "routes/set-theme": {
     id: "routes/set-theme",
@@ -3106,7 +5216,7 @@ const routes = {
     path: "set-theme",
     index: void 0,
     caseSensitive: void 0,
-    module: route13
+    module: route16
   },
   "routes/user-info": {
     id: "routes/user-info",
@@ -3114,7 +5224,7 @@ const routes = {
     path: "user-info",
     index: void 0,
     caseSensitive: void 0,
-    module: route14
+    module: route17
   },
   "routes/progress": {
     id: "routes/progress",
@@ -3122,7 +5232,7 @@ const routes = {
     path: "progress",
     index: void 0,
     caseSensitive: void 0,
-    module: route15
+    module: route18
   },
   "routes/_index": {
     id: "routes/_index",
@@ -3130,7 +5240,7 @@ const routes = {
     path: void 0,
     index: true,
     caseSensitive: void 0,
-    module: route16
+    module: route19
   },
   "routes/_auth": {
     id: "routes/_auth",
@@ -3138,7 +5248,7 @@ const routes = {
     path: void 0,
     index: void 0,
     caseSensitive: void 0,
-    module: route17
+    module: route20
   },
   "routes/chat": {
     id: "routes/chat",
@@ -3146,7 +5256,7 @@ const routes = {
     path: "chat",
     index: void 0,
     caseSensitive: void 0,
-    module: route18
+    module: route21
   }
 };
 export {
