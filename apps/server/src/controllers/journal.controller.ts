@@ -84,8 +84,9 @@ export const journalController = new Elysia({ prefix: "/journals" })
         email: user.email,
       });
 
+      console.log("This ran here ====================");
       // Generate goals after entry creation
-      goalService.generateGoalsFromEntry(entry.id);
+      // goalService.generateGoalsFromEntry(entry.id);
 
       return entry; // Return the created entry
     },

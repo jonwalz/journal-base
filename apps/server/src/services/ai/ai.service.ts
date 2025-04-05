@@ -8,7 +8,10 @@ import type {
 import { env } from "../../config/environment";
 import type { IEntry } from "../../types";
 import { AppError } from "../../utils/errors";
-import { langchainAIServiceClaude } from "./instances";
+import {
+  langchainAIServiceClaude,
+  langchainAIServiceGemini,
+} from "./instances";
 import logger from "../../utils/logger";
 
 export class AIService {
@@ -134,7 +137,7 @@ export class AIService {
 
   async generateText(prompt: string): Promise<AIResponse> {
     try {
-      const response = await langchainAIServiceClaude.generateText(prompt);
+      const response = await langchainAIServiceGemini.generateText(prompt);
       return { message: response };
     } catch (error) {
       logger.error("Failed to generate text:", { error });

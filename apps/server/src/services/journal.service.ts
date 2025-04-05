@@ -71,7 +71,7 @@ export class JournalService {
     // TODO: Chunk the entry.content into smaller chunks and update the zep client to use chunked data
 
     // Add the graph data to Zep
-    const zepResult = await this.zepClient.graph.add({
+    await this.zepClient.graph.add({
       data: JSON.stringify(graphData),
       userId: userId,
       type: "json",

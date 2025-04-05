@@ -30,19 +30,24 @@ export class GoalService {
    * Generate goals based on a journal entry
    */
   async generateGoalsFromEntry(entryId: string): Promise<Goal[]> {
+    console.log(
+      "Generating goals from entry:",
+      "*********************************"
+    );
     // Get the journal entry
     const entry = await this.journalRepository.findEntryById(entryId);
-    
+
     if (!entry) {
       // Handle the case where the entry is not found
       // You might want to throw an error, return an empty array, or log a warning
       console.warn(`Journal entry with ID ${entryId} not found.`);
       return []; // Example: Return empty array if entry not found
     }
-    
+
     // Get the journal to access the userId
     const journal = await this.journalRepository.findById(entry.journalId);
-    
+
+    console.log("Journal entry:", entry, "---------------------");
     // Use AI to generate goal suggestions based on the entry content
     const goalSuggestions = await this.generateGoalSuggestionsFromContent(
       entry.content,
@@ -139,18 +144,21 @@ export class GoalService {
     if (!goal) {
       throw new Error(`Goal with ID ${goalId} not found`);
     }
-    
+
     // Record the goal completion as a metric
     try {
       await goalMetricsService.recordGoalCompletion(goal);
       logger.info(`Recorded goal completion metric for goal: ${goalId}`);
     } catch (error) {
       // Log the error but don't fail the operation if metrics recording fails
-      logger.error(`Failed to record goal completion metric for goal: ${goalId}`, {
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error(
+        `Failed to record goal completion metric for goal: ${goalId}`,
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
     }
-    
+
     return goal;
   }
 
@@ -293,53 +301,58 @@ export class GoalService {
     try {
       // Use AI service to analyze the content and generate goal suggestions
       const response = await this.aiService.generateGoalSuggestions(content);
-      
+
+      console.log("AI response:", response);
+
       // Process and validate the response
-      const suggestions = response.map((suggestion: {
-        content: string;
-        targetDate?: string;
-        metricType?: string;
-      }) => {
-        // Validate metric type
-        const metricType = suggestion.metricType
-          ? this.validateMetricType(suggestion.metricType)
-          : undefined;
+      const suggestions = response.map(
+        (suggestion: {
+          content: string;
+          targetDate?: string;
+          metricType?: string;
+        }) => {
+          // Validate metric type
+          const metricType = suggestion.metricType
+            ? this.validateMetricType(suggestion.metricType)
+            : undefined;
 
-        // Process target date if provided
-        let targetDate: Date | undefined = undefined;
-        if (suggestion.targetDate) {
-          try {
-            targetDate = new Date(suggestion.targetDate);
-            // Validate date is not in the past
-            if (targetDate < new Date()) {
-              // If date is in the past, set it to 7 days from now
-              targetDate = new Date();
-              targetDate.setDate(targetDate.getDate() + 7);
+          // Process target date if provided
+          let targetDate: Date | undefined = undefined;
+          if (suggestion.targetDate) {
+            try {
+              targetDate = new Date(suggestion.targetDate);
+              // Validate date is not in the past
+              if (targetDate < new Date()) {
+                // If date is in the past, set it to 7 days from now
+                targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() + 7);
+              }
+            } catch {
+              // If date parsing fails, leave it undefined
+              targetDate = undefined;
             }
-          } catch {
-            // If date parsing fails, leave it undefined
-            targetDate = undefined;
           }
-        }
 
-        return {
-          content: suggestion.content,
-          targetDate,
-          metricType,
-        };
-      });
+          return {
+            content: suggestion.content,
+            targetDate,
+            metricType,
+          };
+        }
+      );
 
       return suggestions;
     } catch (error) {
-      logger.error('Error generating goal suggestions from content', {
-        error: error instanceof Error ? error.message : String(error)
+      logger.error("Error generating goal suggestions from content", {
+        error: error instanceof Error ? error.message : String(error),
       });
       // Return a default suggestion if AI fails
       return [
         {
-          content: 'Consider setting a personal growth goal based on your journal entries',
+          content:
+            "Consider setting a personal growth goal based on your journal entries",
           targetDate: new Date(new Date().setDate(new Date().getDate() + 7)),
-          metricType: 'resilience',
+          metricType: "resilience",
         },
       ];
     }
@@ -350,11 +363,11 @@ export class GoalService {
    */
   private validateMetricType(metricType: string): MetricType | undefined {
     const validMetricTypes: MetricType[] = [
-      'resilience',
-      'effort',
-      'challenge',
-      'feedback',
-      'learning',
+      "resilience",
+      "effort",
+      "challenge",
+      "feedback",
+      "learning",
     ];
 
     return validMetricTypes.includes(metricType as MetricType)
