@@ -9,6 +9,8 @@ import {
   redirect,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { Toaster } from "sonner";
+// import { Monitoring } from "react-scan/monitoring/remix";
 import type { Journal } from "~/types/journal";
 import type { IUserInfo } from "./hooks/useUserInfo";
 
@@ -25,7 +27,6 @@ import {
 import { Theme } from "./types";
 import { UserInfoService } from "./services/user-info.service";
 import { getSelectedJournalId } from "./utils/journal.server";
-import { Toaster } from "sonner";
 
 export type RootLoaderData = {
   theme: Theme;
@@ -125,8 +126,16 @@ export default function App() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        {/* <script src="https://unpkg.com/react-scan/dist/install-hook.global.js" /> */}
       </head>
       <body>
+        {/* Temporarily disabled - causing unhandled promise rejection during dev
+        <Monitoring
+          apiKey="KJ9tSQilGp8tfDytYNJDY3YPKZTt4SA5" // Safe to expose publically
+          url="https://monitoring.react-scan.com/api/v1/ingest"
+        />
+        */}
+
         <ThemeProvider theme={data.theme}>
           <Outlet context={data} />
           {/* Pass userInfo directly to GoalNotificationProvider */}
@@ -141,8 +150,7 @@ export default function App() {
                 // Apply styles similar to AlertTitle
                 title: "font-bold mb-1 leading-none tracking-tight",
                 // Apply styles similar to AlertDescription
-                description:
-                  "text-sm font-base [&_p]:leading-relaxed",
+                description: "text-sm font-base [&_p]:leading-relaxed",
                 // Keep original action/close button styles for now
                 actionButton:
                   "bg-white dark:bg-secondaryBlack dark:text-darkText border-2 border-border dark:border-darkBorder shadow-light dark:shadow-dark hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none dark:hover:shadow-none",

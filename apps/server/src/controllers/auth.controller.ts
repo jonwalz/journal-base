@@ -159,4 +159,34 @@ export const authController = new Elysia({ prefix: "/auth" })
         valid: t.Boolean(),
       }),
     }
+  )
+  .post(
+    "/dev-login",
+    async () => {
+      // Only allow in development mode
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Dev login is not available in production");
+      }
+
+      const { sessionToken, user, token } = await authService.devLogin();
+
+      return {
+        success: true,
+        user,
+        sessionToken,
+        token,
+      };
+    },
+    {
+      response: {
+        200: t.Object({
+          success: t.Boolean(),
+          token: t.String(),
+          sessionToken: t.String(),
+          user: t.Object({
+            id: t.String(),
+          }),
+        }),
+      },
+    }
   );

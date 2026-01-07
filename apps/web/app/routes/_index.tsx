@@ -1,6 +1,6 @@
 import { type MetaFunction, json, LoaderFunctionArgs } from "@remix-run/node";
-import Article from "../components/Article";
 import { requireAuth } from "~/utils/auth.server";
+import Article from "../components/Article";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   requireAuth(request);

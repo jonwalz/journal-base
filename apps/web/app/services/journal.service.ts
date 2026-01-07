@@ -1,10 +1,10 @@
-import { ApiClient, RequestOptions } from "./api-client.server";
 import {
   CreateJournalInput,
   JournalServiceError,
   Journal,
   JournalEntry,
 } from "~/types/journal";
+import { ApiClient, RequestOptions } from "./api-client.server";
 
 export type { JournalServiceError };
 

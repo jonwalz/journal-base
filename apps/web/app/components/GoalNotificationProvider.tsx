@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useFetcher } from '@remix-run/react';
-import GoalNotification from './ui/GoalNotification';
 import type { IUserInfo } from '~/hooks/useUserInfo';
+import GoalNotification from './ui/GoalNotification';
 
 interface GoalNotificationProviderProps {
   userInfo: IUserInfo;

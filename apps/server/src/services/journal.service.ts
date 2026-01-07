@@ -23,6 +23,24 @@ export class JournalService {
     });
   }
 
+  /**
+   * Ensures a user exists in Zep before adding graph data.
+   * Creates the user if they don't exist.
+   */
+  private async ensureZepUser(userId: string): Promise<void> {
+    try {
+      await this.zepClient.user.get(userId);
+    } catch (error: unknown) {
+      // User doesn't exist, create them
+      // Zep SDK uses 'statusCode' not 'status'
+      if (error && typeof error === "object" && "statusCode" in error && error.statusCode === 404) {
+        await this.zepClient.user.add({ userId });
+      } else {
+        throw error;
+      }
+    }
+  }
+
   async createJournal(userId: string, title: string): Promise<IJournal> {
     return await this.journalRepository.create(userId, title);
   }
@@ -69,6 +87,9 @@ export class JournalService {
     };
 
     // TODO: Chunk the entry.content into smaller chunks and update the zep client to use chunked data
+
+    // Ensure user exists in Zep before adding graph data
+    await this.ensureZepUser(userId);
 
     // Add the graph data to Zep
     await this.zepClient.graph.add({

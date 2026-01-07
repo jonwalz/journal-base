@@ -1,6 +1,7 @@
 import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+// import ReactComponentName from "react-scan/react-component-name/vite";
 
 declare module "@remix-run/node" {
   interface Future {
@@ -20,5 +21,6 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
-  ],
+    // ReactComponentName({}), // Temporarily disabled - causing unhandled promise rejection
+  ] as PluginOption[],
 });

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState  } from "react";
 import {
   useLocation,
   Form,
@@ -9,7 +9,7 @@ import {
   useNavigate,
   useFetcher,
 } from "@remix-run/react";
-import { useState } from "react";
+import { Journal } from "~/types/journal";
 import {
   Sidebar,
   SidebarContent,
@@ -25,15 +25,14 @@ import {
   SidebarTrigger,
 } from "../../components/ui/sidebar";
 import { BreadcrumbNavigation } from "../Breadcrumb";
-import { sidebarOptions } from "./constants";
-import { JournalSelector } from "./JournalSelector";
-import { UserMenu } from "./UserMenu";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Journal } from "~/types/journal";
+import { sidebarOptions } from "./constants";
+import { JournalSelector } from "./JournalSelector";
+import { UserMenu } from "./UserMenu";
+
 
 type ContextType = {
   journals: Journal[];
@@ -98,15 +97,15 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarHeader>
           <SidebarContent className="scrollbar">
-            <SidebarGroup className="p-0 border-t-4 border-border dark:border-darkNavBorder">
+            <SidebarGroup className="p-0 border-t-4 border-border dark:border-darkBorder">
               <SidebarMenu className="gap-0">
                 {sidebarOptions.map((items) => (
                   <SidebarMenuItem key={items.name}>
                     <SidebarMenuSubButton asChild className="translate-x-0">
                       <Link
-                        className={`rounded-none h-auto block border-b-4 border-border dark:border-darkNavBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white ${
+                        className={`rounded-none h-auto block border-b-4 border-border dark:border-darkBorder p-4 pl-4 font-base text-text/90 dark:text-darkText/90 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white ${
                           location.pathname === items.href
-                            ? "bg-main50 dark:bg-main-700 dark:text-white"
+                            ? "bg-main-50 dark:bg-main-700 dark:text-white"
                             : ""
                         }`}
                         to={items.href}

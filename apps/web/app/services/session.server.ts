@@ -77,11 +77,11 @@ export async function requireUserSession(
       AuthService.verifyAuthToken(authToken),
       AuthService.verifySessionToken(sessionToken),
     ]);
-    
+
     // Get the user ID from the session
     const userId = session.get("userId");
-    console.log('Current session userId:', userId);
-    
+    console.log("Current session userId:", userId);
+
     return { authToken, sessionToken, userId };
   } catch (error) {
     // Clear the session if token verification fails

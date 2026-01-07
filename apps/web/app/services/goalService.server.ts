@@ -1,5 +1,5 @@
-import { ApiClient, RequestOptions } from "./api-client.server";
 import { Goal, GoalFilters } from "~/types/goals";
+import { ApiClient, RequestOptions } from "./api-client.server";
 
 export class GoalServiceError extends Error {
   constructor(

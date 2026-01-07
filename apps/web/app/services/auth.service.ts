@@ -44,4 +44,10 @@ export class AuthService {
     );
     return response.data;
   }
+
+  // Dev-only login - creates test user if needed
+  static async devLogin(): Promise<AuthResponse> {
+    const response = await ApiClient.post<AuthResponse>("/auth/dev-login", {});
+    return response.data;
+  }
 }

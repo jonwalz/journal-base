@@ -1,5 +1,6 @@
 import { ChevronsUpDown, Plus } from "lucide-react";
 import { useState } from "react";
+import { Journal } from "~/types/journal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../../components/ui/sidebar";
-import { Journal } from "~/types/journal";
 import { Button } from "../ui/button";
 
 interface JournalSelectorProps {
@@ -82,7 +82,7 @@ export function JournalSelector({
               <div className="flex size-6 items-center justify-center rounded-md border">
                 <Plus className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground">
+              <div className="font-medium text-text dark:text-darkText">
                 Create New Journal
               </div>
             </DropdownMenuItem>
@@ -100,7 +100,7 @@ export function JournalSelector({
           <div className="flex size-6 items-center justify-center rounded-md border bg-background">
             <Plus className="size-4" />
           </div>
-          <div className="font-medium text-muted-foreground">
+          <div className="font-medium text-text dark:text-darkText">
             Create New Journal
           </div>
         </Button>

@@ -4,6 +4,7 @@ import {
   Form,
   Link,
   useActionData,
+  useLoaderData,
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
@@ -31,11 +32,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect("/");
   }
 
-  return json({});
+  return json({
+    isDev: process.env.NODE_ENV !== "production",
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
+  const intent = formData.get("intent")?.toString();
+
+  // Handle dev login
+  if (intent === "dev-login") {
+    try {
+      const response = await AuthService.devLogin();
+
+      const cookie = await setAuthTokens(
+        request,
+        response.token,
+        response.sessionToken,
+        response.user.id
+      );
+
+      return redirect("/journal/new", {
+        headers: {
+          "Set-Cookie": cookie,
+        },
+      });
+    } catch (error) {
+      return json<ActionDataError>(
+        { errors: { _form: "Dev login failed" } },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Regular login
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
 
@@ -76,6 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function LoginPage() {
+  const { isDev } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionDataError>();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
@@ -155,6 +187,21 @@ export default function LoginPage() {
             Sign up
           </Link>
         </div>
+
+        {/* Dev Login - only visible in development */}
+        {isDev && (
+          <Form method="post" className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <input type="hidden" name="intent" value="dev-login" />
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Logging in..." : "🔧 Dev Login (dev@test.local)"}
+            </Button>
+          </Form>
+        )}
       </div>
     </div>
   );

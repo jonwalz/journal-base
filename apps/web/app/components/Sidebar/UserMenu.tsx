@@ -7,6 +7,8 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import { Form } from "@remix-run/react";
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,11 +23,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../../components/ui/sidebar";
-import { Form } from "@remix-run/react";
 import { useTheme } from "../ThemeProvider";
 import { useUserInfo } from "../../hooks/useUserInfo";
 import { UserInfoForm } from "../UserInfoForm";
-import { useState } from "react";
 
 export function UserMenu() {
   const { theme, toggleTheme } = useTheme();

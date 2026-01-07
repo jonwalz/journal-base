@@ -1,19 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Loader2, ArrowLeft, Trash2 } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import {
-  Modal,
-  ModalTrigger,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalTitle,
-  ModalDescription,
-  ModalClose,
-} from "~/components/ui/modal";
-import { MainLayout } from "~/layouts/MainLayout";
 import { toast } from "sonner";
-
 import {
   Form,
   useActionData,
@@ -28,6 +15,19 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
+import { Button } from "~/components/ui/button";
+import {
+  Modal,
+  ModalTrigger,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalTitle,
+  ModalDescription,
+  ModalClose,
+} from "~/components/ui/modal";
+import { MainLayout } from "~/layouts/MainLayout";
+
 import { requireUserSession } from "~/services/session.server";
 import { getSelectedJournalId } from "~/utils/journal.server";
 import type { JournalEntry } from "~/types/journal";

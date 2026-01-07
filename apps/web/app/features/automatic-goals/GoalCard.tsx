@@ -1,7 +1,7 @@
+import { Form } from '@remix-run/react';
 import { Goal } from '~/types/goals';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent } from '~/components/ui/card';
-import { Form } from '@remix-run/react';
 
 interface GoalCardProps {
   goal: Goal;

@@ -1,6 +1,8 @@
 import { json, SerializeFrom } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import type { LoaderFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { MainLayout } from "~/layouts/MainLayout";
@@ -10,9 +12,7 @@ import {
   ChatClientError,
   IChatMessage,
 } from "~/services/chat.client";
-import ReactMarkdown from "react-markdown";
 import { requireUserSession } from "~/services/session.server";
-import type { LoaderFunction } from "@remix-run/node";
 import { useUserInfo } from "~/hooks/useUserInfo";
 
 export const loader: LoaderFunction = async ({ request }) => {

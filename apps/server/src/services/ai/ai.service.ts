@@ -24,6 +24,24 @@ export class AIService {
     });
   }
 
+  /**
+   * Ensures a user exists in Zep before adding graph data.
+   * Creates the user if they don't exist.
+   */
+  private async ensureZepUser(userId: string): Promise<void> {
+    try {
+      await this.zepClient.user.get(userId);
+    } catch (error: unknown) {
+      // User doesn't exist, create them
+      // Zep SDK uses 'statusCode' not 'status'
+      if (error && typeof error === "object" && "statusCode" in error && error.statusCode === 404) {
+        await this.zepClient.user.add({ userId });
+      } else {
+        throw error;
+      }
+    }
+  }
+
   async initializeUserMemory(userId: string): Promise<void> {
     try {
       await this.zepClient.memory.search(this.COLLECTION_NAME, {
@@ -300,6 +318,9 @@ export class AIService {
 
   async addToGraph(userId: string, data: any) {
     try {
+      // Ensure user exists in Zep before adding graph data
+      await this.ensureZepUser(userId);
+
       await this.zepClient.graph.add({
         data,
         userId: userId,
