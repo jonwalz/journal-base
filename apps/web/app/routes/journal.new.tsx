@@ -9,9 +9,6 @@ import {
   History,
 } from "lucide-react";
 import "~/features/automatic-goals/goal-animations.css";
-import { Button } from "~/components/ui/button";
-import { MainLayout } from "~/layouts/MainLayout";
-import Editor from "~/components/ui/CustomTextEditor/RichTextEditor";
 import {
   useOutletContext,
   useLoaderData,
@@ -24,6 +21,9 @@ import {
   LoaderFunction,
   MetaFunction,
 } from "@remix-run/node";
+import { Button } from "~/components/ui/button";
+import { MainLayout } from "~/layouts/MainLayout";
+import Editor from "~/components/ui/CustomTextEditor/RichTextEditor";
 import { JournalService } from "~/services/journal.service";
 import { requireUserSession } from "~/services/session.server";
 import { getSelectedJournalId } from "~/utils/journal.server";
@@ -186,7 +186,7 @@ const TherapeuticJournalEntry = () => {
   return (
     <MainLayout>
       <div className="container max-w-4xl mx-auto p-4 pt-2 space-y-3 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-1">Today's Journal Entry</h1>
+        <h1 className="text-3xl font-bold mb-1">Today&apos;s Journal Entry</h1>
         <p className="text-gray-600 dark:text-gray-400">
           Record your thoughts, feelings, and experiences for today.
         </p>
@@ -360,7 +360,14 @@ const TherapeuticJournalEntry = () => {
                 return (
                   <div
                     key={entry.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => navigate(`/journal/edit/${entry.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        navigate(`/journal/edit/${entry.id}`);
+                      }
+                    }}
                     className="cursor-pointer bg-white dark:bg-gray-800 rounded-lg p-2.5 hover:bg-accent/10 border-2 border-gray-200 dark:border-gray-700 mb-2 transition-colors goal-list-item"
                   >
                     <div className="flex justify-between items-start mb-1">

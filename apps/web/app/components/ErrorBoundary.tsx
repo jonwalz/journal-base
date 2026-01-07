@@ -5,7 +5,11 @@ interface ErrorBoundaryProps {
 
 export function ErrorBoundary({ error, resetErrorBoundary }: ErrorBoundaryProps) {
   const handleReset = () => {
-    resetErrorBoundary?.() || window.location.reload();
+    if (resetErrorBoundary) {
+      resetErrorBoundary();
+    } else {
+      window.location.reload();
+    }
   };
 
   return (
