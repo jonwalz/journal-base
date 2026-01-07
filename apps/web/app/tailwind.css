@@ -1,13 +1,96 @@
+@import "tailwindcss";
+@import "tw-animate-css";
 @import "./styles/theme/colors.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
+@plugin "@tailwindcss/typography";
+@config "../tailwind.config.ts";
+
+/* Map CSS variables to Tailwind theme colors using @theme inline */
+@theme inline {
+  /* shadcn/ui color mappings */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Sidebar colors */
+  --color-sidebar-background: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Main color palette */
+  --color-main: #b3cb9a;
+  --color-main-50: #b3cb9a;
+  --color-main-100: #a3bf87;
+  --color-main-200: #93b374;
+  --color-main-300: #83a761;
+  --color-main-400: #739b4e;
+  --color-main-500: #638f3b;
+  --color-main-600: #538328;
+  --color-main-700: #437715;
+  --color-main-800: #336b02;
+  --color-main-900: #235f00;
+
+  /* Additional colors */
+  --color-overlay: rgba(0, 0, 0, 0.8);
+  --color-bg: #dfe5f2;
+  --color-text: #000;
+  --color-darkBg: #1c1c1c;
+  --color-darkText: #eeefe9;
+  --color-darkBorder: #000;
+  --color-secondaryBlack: #232323;
+
+  /* Border radius */
+  --radius-base: 5px;
+  --radius: var(--radius);
+
+  /* Box shadows */
+  --shadow-light: 4px 4px 0px 0px #000;
+  --shadow-dark: 4px 4px 0px 0px #000;
+
+  /* Translate values */
+  --translate-boxShadowX: 4px;
+  --translate-boxShadowY: 4px;
+  --translate-reverseBoxShadowX: -4px;
+  --translate-reverseBoxShadowY: -4px;
+
+  /* Font weights */
+  --font-weight-base: 500;
+  --font-weight-heading: 700;
+}
+
+/* Dark mode color override */
 .dark,
 :root[class~="dark"] {
   color: white;
 }
 
+/* CSS variable-based colors (shadcn style) - these use HSL values */
 @layer base {
   :root {
     --sidebar-background: 0 0% 98%;
