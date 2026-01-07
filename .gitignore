@@ -74,3 +74,4 @@ tasks/
 # windsurf rules
 .windsurfrules
 .windsurfrules/BEST_PRACTICES.md
+.ai/repomix-output.xml
